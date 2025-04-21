@@ -27,8 +27,8 @@ function redirectToLogin(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/user-list/:path*",
+    "/apps/:path*",
+    "/system-config/:path*",
     "/example/:path*",
   ],
 }

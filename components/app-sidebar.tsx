@@ -26,7 +26,7 @@ const data = {
       menus: [
         {
           title: "Dashboard",
-          url: "/dashboard",
+          url: "/apps/dashboard",
           icon: "bx bx-tachometer",
           slug: "app-dsb"
         },
@@ -154,7 +154,7 @@ const data = {
         },
         {
           title: "Roles & Permissions",
-          url: "#",
+          url: "/system-config/roles-permission",
           icon: "bx bx-shield-quarter",
           slug: "usm-rnp"
         },

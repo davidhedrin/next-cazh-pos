@@ -2,7 +2,7 @@
 
 // import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { GetDataUser } from "../api/dashboard/action";
+import { GetDataUser } from "@/app/api/dashboard/action";
 import { User } from "@prisma/client";
 import { toast } from "sonner";
 

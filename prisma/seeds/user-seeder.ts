@@ -4,7 +4,7 @@ import { DefaultArgs } from '@prisma/client/runtime/library';
 export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>) => {
   const user = await prisma.user.create({
     data: { 
-      email: "david123@gmail.com",
+      email: "davidhedrin123@gmail.com",
       password: "$2a$15$ygGbPlcO3BQsl1M29T5RUuTUKDrvY7zp4ny9X0Hc9js3qVZfMjF7K",
       email_verified: new Date(),
       store_id: 1,

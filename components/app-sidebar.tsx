@@ -121,23 +121,6 @@ const data = {
       ]
     },
     {
-      groupName: "User Management",
-      menus: [
-        {
-          title: "User List",
-          url: "#",
-          icon: "bx bx-user-pin",
-          slug: "usm-usl"
-        },
-        {
-          title: "Roles & Permissions",
-          url: "#",
-          icon: "bx bx-shield-quarter",
-          slug: "usm-rnp"
-        },
-      ]
-    },
-    {
       groupName: "Settings",
       menus: [
         {
@@ -157,6 +140,23 @@ const data = {
           url: "#",
           icon: "bx bx-id-card",
           slug: "set-prf"
+        },
+      ]
+    },
+    {
+      groupName: "System Config",
+      menus: [
+        {
+          title: "User List",
+          url: "/system-config/user-list",
+          icon: "bx bx-user-pin",
+          slug: "usm-usl"
+        },
+        {
+          title: "Roles & Permissions",
+          url: "#",
+          icon: "bx bx-shield-quarter",
+          slug: "usm-rnp"
         },
       ]
     },

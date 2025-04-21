@@ -102,7 +102,7 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
                 {toggle_pass ? <EyeOff size={18} /> : <Eye size={18} />}
               </a>
             </div>
-            <Button disabled={pending} type="submit" className="w-full mt-2">
+            <Button disabled={pending} type="submit" className="w-full mt-2 cursor-pointer">
               {pending ? "Logging in..." : "Login"}
             </Button>
           </div>

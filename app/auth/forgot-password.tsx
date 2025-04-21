@@ -59,7 +59,7 @@ export default function ForgtoPassword({ setSigninSignup }: { setSigninSignup: R
                 {stateEmail.errors?.email && <ZodErrors err={stateEmail.errors?.email} />}
               </div>
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full cursor-pointer">
               Send Email
             </Button>
           </div>

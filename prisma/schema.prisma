@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model StoresInfo {
+  id        Int     @id @default(autoincrement())
+  slug      String  @unique
+  name      String?
+  desc      String?
+  address   String?
+  no_tlp    String?
+  email     String?
+  is_active Boolean @default(true)
+  users     User[]
+  roles     Roles[]
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+}
+
+model Menus {
+  id         Int         @id @default(autoincrement())
+  slug       String      @unique
+  name       String?
+  is_active  Boolean     @default(true)
+  role_menus RoleMenus[]
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+}
+
+model Roles {
+  id         Int         @id @default(autoincrement())
+  slug       String      @unique
+  name       String?
+  store_id   Int?
+  is_active  Boolean     @default(true)
+  role_menus RoleMenus[]
+  users      User[]
+  store      StoresInfo? @relation(fields: [store_id], references: [id], onDelete: Cascade)
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+}
+
+model RoleMenus {
+  id      Int      @id @default(autoincrement())
+  role_id Int
+  menu_id Int
+  create  Boolean?
+  read    Boolean?
+  update  Boolean?
+  delete  Boolean?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  role Roles @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  menu Menus @relation(fields: [menu_id], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id             Int                  @id @default(autoincrement())
+  email          String               @unique
+  password       String
+  email_verified DateTime?
+  store_id       Int?
+  role_id        Int?
+  is_active      Boolean?             @default(true)
+  accounts       Account?
+  ver_token      VerificationToken?
+  role           Roles?               @relation(fields: [role_id], references: [id], onDelete: SetNull)
+  store          StoresInfo?          @relation(fields: [store_id], references: [id], onDelete: Cascade)
+  reset_tokens   PasswordResetToken[]
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+  rolesId   Int?
+}
+
+model Account {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  fullname    String?
+  image       String?
+  no_phone    String?
+  gender      String?
+  birth_date  String?
+  birth_place String?
+  is_active   Boolean? @default(true)
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  userId  Int      @unique
+  token   String
+  expires DateTime
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id       Int       @id @default(autoincrement())
+  userId   Int
+  token    String    @unique
+  createAt DateTime? @default(now())
+  reestAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

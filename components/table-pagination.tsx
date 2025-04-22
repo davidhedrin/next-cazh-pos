@@ -19,6 +19,7 @@ import { Dispatch, SetStateAction } from "react"
 type TablePaginationProps = {
   perPage: string;
   pageTable: string;
+  totalPage: number;
   setPerPage: Dispatch<SetStateAction<string>>;
   setPageTable: Dispatch<SetStateAction<string>>;
 }
@@ -26,6 +27,7 @@ type TablePaginationProps = {
 export default function TablePagination({
   perPage,
   pageTable,
+  totalPage,
   setPerPage,
   setPageTable,
 } : TablePaginationProps) {
@@ -57,7 +59,7 @@ export default function TablePagination({
         <div className="flex items-center text-sm font-medium gap-2">
           <div>Page</div>
           <Input value={pageTable} onChange={(e) => setPageTable(e.target.value)} className="h-8 w-10 text-center px-2" type="text" placeholder="0" />
-          <div>of 10</div>
+          <div><span className="pe-1">of</span> {totalPage}</div>
         </div>
         <div className="flex items-center gap-2 ml-0">
           <Button

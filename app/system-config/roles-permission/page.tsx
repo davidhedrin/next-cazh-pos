@@ -97,7 +97,7 @@ export default function RolesPermission() {
           </TableBody>
         </Table>
       </div>
-      <TablePagination perPage={perPage} pageTable={pageTable} setPerPage={setPerPage} setPageTable={setPageTable} />
+      <TablePagination perPage={perPage} pageTable={pageTable} totalPage={totalPage} setPerPage={setPerPage} setPageTable={setPageTable} />
     </>
   )
 }

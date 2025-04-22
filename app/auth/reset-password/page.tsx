@@ -17,50 +17,84 @@ import { SonnerPromise } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { resetPassword } from '@/app/api/auth/action';
 import { Eye, EyeOff } from 'lucide-react';
+import { z } from "zod";
+import { FormState } from "@/lib/models-type";
 
 export default function ResetPassword({ searchParams }: { searchParams: Promise<{ [key: string]: string }> }) {
   const appName = process.env.NEXT_PUBLIC_APPS_NAME || "Cazh POS";
-  const { token } = use(searchParams);
   const { push } = useRouter();
+  const { token } = use(searchParams);
 
-  const [stateReset, formActionSendReset, pending] = useActionState(resetPassword, {});
   const [password, setPassword] = useState('');
   const [coPassword, setCoPassword] = useState('');
   const [toggle_pass, setTogglePass] = useState(false);
   const [toggle_copass, setToggleCoPass] = useState(false);
-  let sonnerSendReset: string | number;
-  const handleSubmitForm = (formData: FormData) => {
-    if(token === undefined || token.toString().trim() === "") {
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+
+  const [stateForm, setStateForm] = useState<FormState>({ success: false, errors: {} });
+  const FormSchemaChangePass = z.object({
+    password: z
+      .string()
+      .min(8, { message: 'Be at least 8 characters long' })
+      .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
+      .regex(/[0-9]/, { message: 'Contain at least one number.' })
+      .regex(/[^a-zA-Z0-9]/, {
+        message: 'Contain at least one special character.',
+      })
+      .trim(),
+    co_password: z
+      .string()
+      .min(8, { message: 'Be at least 8 characters long' })
+      .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
+      .regex(/[0-9]/, { message: 'Contain at least one number.' })
+      .regex(/[^a-zA-Z0-9]/, {
+        message: 'Contain at least one special character.',
+      })
+      .trim()
+  }).refine((data) => data.password === data.co_password, {
+    message: "Confirmation password don't match",
+    path: ["co_password"]
+  });
+  const handleSubmitForm = async (formData: FormData) => {
+    const data = Object.fromEntries(formData);
+    const valResult = FormSchemaChangePass.safeParse(data);
+    if (!valResult.success) {
+      setStateForm({
+        success: false,
+        errors: valResult.error.flatten().fieldErrors,
+      });
+      return;
+    };
+
+    setStateForm({ success: true, errors: {} });
+    if (token === undefined || token.toString().trim() === "") {
       toast.warning("Invalid Token!", {
         description: "Looks like your token is missing. Click and try again!",
         richColors: true
       });
       return;
     }
+    
+    const sonnerSignIn = SonnerPromise("Changing password...", "Wait a moment, we try to change your password");
+    setLoadingSubmit(true);
+    try {
+      formData.append('token', token);
+      await resetPassword(formData);
 
-    formData.append('token', token);
-    formActionSendReset(formData);
-  }
-
-  useEffect(() => {
-    toast.dismiss(sonnerSendReset);
-    if (stateReset?.success === true) {
       toast.success("Password Changed!", {
         description: "Your password has been change successfully.",
         richColors: true
       });
       push("/auth");
-    } else if (stateReset?.success == false && stateReset.message != null) {
+    } catch (error: any) {
       toast.warning("Request Failed!", {
-        description: stateReset.message,
+        description: error.message,
         richColors: true
       });
     }
-  }, [stateReset]);
-
-  useEffect(() => {
-    if (pending) sonnerSendReset = SonnerPromise("Changing password...", "Wait a moment, we try to change your password");
-  }, [pending]);
+    toast.dismiss(sonnerSignIn);
+    setLoadingSubmit(false);
+  };
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-4 bg-muted px-6 md:p-10">
@@ -89,7 +123,7 @@ export default function ResetPassword({ searchParams }: { searchParams: Promise<
                     <Label htmlFor="password">Password</Label>
                     <div>
                       <Input id="password" name="password" type={toggle_pass ? "text" : "password"} placeholder='***********' value={password} onChange={(e) => setPassword(e.target.value)} />
-                      {stateReset.errors?.password && <ZodErrors err={stateReset.errors?.password} />}
+                      {stateForm.errors?.password && <ZodErrors err={stateForm.errors?.password} />}
                     </div>
                   </div>
                   <a
@@ -106,7 +140,7 @@ export default function ResetPassword({ searchParams }: { searchParams: Promise<
                     <Label htmlFor="co_password">Confirm Password</Label>
                     <div>
                       <Input id="co_password" name="co_password" type={toggle_copass ? "text" : "password"} placeholder='***********' value={coPassword} onChange={(e) => setCoPassword(e.target.value)} />
-                      {stateReset.errors?.co_password && <ZodErrors err={stateReset.errors?.co_password} />}
+                      {stateForm.errors?.co_password && <ZodErrors err={stateForm.errors?.co_password} />}
                     </div>
                   </div>
                   <a
@@ -118,8 +152,8 @@ export default function ResetPassword({ searchParams }: { searchParams: Promise<
                     {toggle_copass ? <EyeOff size={18} /> : <Eye size={18} />}
                   </a>
                 </div>
-                <Button disabled={pending} type="submit" className="w-full mt-2">
-                  {pending ? "Changing..." : "Reset Password"}
+                <Button disabled={loadingSubmit} type="submit" className="w-full mt-2">
+                  {loadingSubmit ? "Changing..." : "Reset Password"}
                 </Button>
               </div>
 

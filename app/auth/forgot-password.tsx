@@ -14,32 +14,49 @@ import { ZodErrors } from '@/components/zod-errors';
 import { toast } from 'sonner';
 import { SonnerPromise } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { z } from 'zod';
+import { FormState } from '@/lib/models-type';
 
 export default function ForgtoPassword({ setSigninSignup }: { setSigninSignup: React.Dispatch<React.SetStateAction<number>> }) {
   const { push } = useRouter();
-  const [stateEmail, formActionSendEmail, pending] = useActionState(ForgotPassword, {});
   const [email, setEmail] = useState('');
-  let sonnerSendEmail: string | number;
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
 
-  useEffect(() => {
-    toast.dismiss(sonnerSendEmail);
-    if (stateEmail?.success === true) {
+  const [stateForm, setStateForm] = useState<FormState>({ success: false, errors: {} });
+  const FormSchemaSignIn = z.object({
+    email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
+  });
+  const handleSubmit = async (formData: FormData) => {
+    const data = Object.fromEntries(formData);
+    const valResult = FormSchemaSignIn.safeParse(data);
+    if (!valResult.success) {
+      setStateForm({
+        success: false,
+        errors: valResult.error.flatten().fieldErrors,
+      });
+      return;
+    };
+
+    setStateForm({ success: true, errors: {} });
+    const sonnerSignIn = SonnerPromise("Sending email...", "Hang tight, we're sending the reset link to your email");
+    setLoadingSubmit(true);
+    try {
+      await ForgotPassword(formData);
+
       toast.success("Check your Email!", {
         description: "We've send link reset password to your email.",
         richColors: true
       });
       push("/");
-    } else if (stateEmail?.success == false && stateEmail.message != null) {
+    } catch (error: any) {
       toast.warning("Failed send Email!", {
-        description: stateEmail.message,
+        description: error.message,
         richColors: true
       });
     }
-  }, [stateEmail]);
-
-  useEffect(() => {
-    if (pending) sonnerSendEmail = SonnerPromise("Sending email...", "Hang tight, we're sending the reset link to your email");
-  }, [pending]);
+    toast.dismiss(sonnerSignIn);
+    setLoadingSubmit(false);
+  };
 
   return (
     <Card className="gap-5">
@@ -50,17 +67,17 @@ export default function ForgtoPassword({ setSigninSignup }: { setSigninSignup: R
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formActionSendEmail} className="grid gap-4">
+        <form action={(formData) => handleSubmit(formData)} className="grid gap-4">
           <div className="flex flex-col gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <div>
                 <Input id="email" name="email" type="text" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                {stateEmail.errors?.email && <ZodErrors err={stateEmail.errors?.email} />}
+                {stateForm.errors?.email && <ZodErrors err={stateForm.errors?.email} />}
               </div>
             </div>
-            <Button type="submit" className="w-full cursor-pointer">
-              Send Email
+            <Button disabled={loadingSubmit} type="submit" className="w-full cursor-pointer">
+              {loadingSubmit ? "Sending..." : "Send Email"}
             </Button>
           </div>
 

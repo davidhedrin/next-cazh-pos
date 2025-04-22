@@ -49,7 +49,7 @@ export default function RolesPermission() {
       perPage: parseInt(perPage)
     });
     console.log(result);
-    setTotalPage(result.meta.totalPages)
+    setTotalPage(result.meta.totalPages);
     setDatas(result.data);
     setFatchLoading(false);
   }

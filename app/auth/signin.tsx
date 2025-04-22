@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,34 +18,62 @@ import { toast } from "sonner"
 import { useRouter } from 'next/navigation';
 import { SonnerPromise } from '@/lib/utils';
 import { Eye, EyeOff } from 'lucide-react';
+import { FormState } from '@/lib/models-type';
+
+import { z } from 'zod';
 
 export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React.Dispatch<React.SetStateAction<number>> }) {
   const { push } = useRouter();
 
-  const [email, setEmail] = useState('davidhedrin123@gmail.com');
-  const [password, setPassword] = useState('Jeis0304!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [toggle_pass, setTogglePass] = useState(false);
-  const [state, formActionSignIn, pending] = useActionState(signInCredential, {});
-  let sonnerSignIn: string | number;
-  useEffect(() => {
-    toast.dismiss(sonnerSignIn);
-    if (state?.success) {
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+
+  const [stateForm, setStateForm] = useState<FormState>({success: false, errors: {}});
+  const FormSchemaSignIn = z.object({
+    email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
+    password: z
+      .string()
+      .min(8, { message: 'Be at least 8 characters long' })
+      .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
+      .regex(/[0-9]/, { message: 'Contain at least one number.' })
+      .regex(/[^a-zA-Z0-9]/, {
+        message: 'Contain at least one special character.',
+      })
+      .trim(),
+  });
+  const handleSubmit = async (formData: FormData) => {
+    const data = Object.fromEntries(formData);
+    const valResult = FormSchemaSignIn.safeParse(data);
+    if (!valResult.success) {
+      setStateForm({
+        success: false,
+        errors: valResult.error.flatten().fieldErrors,
+      });
+      return;
+    };
+
+    setStateForm({success: true, errors: {}});
+    const sonnerSignIn = SonnerPromise("Signing you in...", "Please wait to Authenticating your credentials");
+    setLoadingSubmit(true);
+    try {
+      await signInCredential(formData);
+      
       toast.success("Login successfully!", {
         description: `Welcome back ${email}`,
         richColors: true
       });
       push("/apps/dashboard");
-    } else if (state?.success == false && state.message != null) {
+    } catch (error: any) {
       toast.warning("Invalid credentials!", {
-        description: state.message,
+        description: error.message,
         richColors: true
       });
     }
-  }, [state]);
-
-  useEffect(() => {
-    if (pending) sonnerSignIn = SonnerPromise("Signing you in...", "Please wait to Authenticating your credentials");
-  }, [pending]);
+    toast.dismiss(sonnerSignIn);
+    setLoadingSubmit(false);
+  };
 
   return (
     <Card className="gap-5">
@@ -71,13 +99,13 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
             Or continue with
           </span>
         </div>
-        <form action={formActionSignIn} className="grid gap-4">
+        <form action={(formData) => handleSubmit(formData)} className="grid gap-4">
           <div className="grid gap-3">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <div>
                 <Input id="email" name="email" type="text" placeholder="email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                {state.errors?.email && <ZodErrors err={state.errors?.email} />}
+                {stateForm.errors?.email && <ZodErrors err={stateForm.errors?.email} />}
               </div>
             </div>
             <div className="relative w-full">
@@ -90,7 +118,7 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
                 </div>
                 <div>
                   <Input id="password" name="password" type={toggle_pass ? "text" : "password"} placeholder='***********' value={password} onChange={(e) => setPassword(e.target.value)} />
-                  {state.errors?.password && <ZodErrors err={state.errors?.password} />}
+                  {stateForm.errors?.password && <ZodErrors err={stateForm.errors?.password} />}
                 </div>
               </div>
               <a
@@ -102,8 +130,8 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
                 {toggle_pass ? <EyeOff size={18} /> : <Eye size={18} />}
               </a>
             </div>
-            <Button disabled={pending} type="submit" className="w-full mt-2 cursor-pointer">
-              {pending ? "Logging in..." : "Login"}
+            <Button disabled={loadingSubmit} type="submit" className="w-full mt-2 cursor-pointer">
+              {loadingSubmit ? "Logging in..." : "Login"}
             </Button>
           </div>
           <div className="text-center text-sm">

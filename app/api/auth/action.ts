@@ -185,7 +185,7 @@ export async function resetPassword(_: any, formData: FormData): Promise<FormSta
     const findToken = await db.passwordResetToken.findUnique({
       where: {
         token: tokens,
-        createAt: { gt: new Date(Date.now() - 1000 * 60 * 60 * 4)},
+        createAt: { gt: new Date(Date.now() - 1000 * 60 * 5)},
         reestAt: null
       }
     });

@@ -22,3 +22,11 @@ export function SonnerPromise(title: string = "Loading data...", desc: string = 
 
   return toastId;
 }
+
+export function formatDate(dateString: string | Date, dtStyle: "short" | "full" | "long" | "medium" = "short", tmStyle: "short" | "full" | "long" | "medium" = "short") {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("id-ID", {
+    dateStyle: dtStyle,
+    timeStyle: tmStyle,
+  }).format(date);
+}

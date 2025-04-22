@@ -9,10 +9,11 @@ export default function ResetPassword({url}: ResetPasswordProps) {
   return (
     <Html>
       <Head />
-      <Body style={{ backgroundColor: '#f9f9f9', fontFamily: 'Arial, sans-serif', padding: '20px', color: '#333' }}>
+      <Body style={{ backgroundColor: '#f9f9f9', fontFamily: 'Arial, sans-serif', paddingRight: '0px', paddingLeft: '0px', color: '#333' }}>
         <Container style={{ padding: '20px', maxWidth: '500px', margin: '0 auto' }}>
           <Section style={{ textAlign: 'center' }}>
             {/* Image Here */}
+            <img src='https://cdn1.iconfinder.com/data/icons/heroicons-ui/24/shopping-bag-512.png' width={40} />
             <Text style={{ fontSize: '20px', fontWeight: 'bold', color: '#0070f3', marginTop: '0px' }}>{appName}</Text>
           </Section>
 
@@ -55,11 +56,14 @@ export default function ResetPassword({url}: ResetPasswordProps) {
                   {url}
                 </Link>
               </Text>
+              <Text style={{ fontSize: '13px', color: '#888', lineHeight: '19px', marginBottom: '0px', fontStyle: 'italic' }}>
+                For security reasons, This password reset URL will expire in <b>5 minutes</b>.
+              </Text>
             </Section>
           </Section>
 
           <Section style={{ textAlign: 'center', maxWidth: '250px' }}>
-            <Text style={{ fontSize: '13px', color: '#888', marginTop: '0px', lineHeight: '19px' }}>
+            <Text style={{ fontSize: '13px', color: '#888', marginTop: '0px', lineHeight: '19px', marginBottom: '0px' }}>
               By clicking continue, you agree to our <Link href="/terms" style={{ textDecoration: 'none', color: '#0070f3' }}>Terms of Service</Link> and our <Link href="/privacy" style={{ textDecoration: 'none', color: '#0070f3' }}>Privacy Policy</Link>.
             </Text>
           </Section>

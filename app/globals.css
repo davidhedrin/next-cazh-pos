@@ -44,6 +44,13 @@
 }
 
 :root {
+  --color-primary: #195bea;
+  --color-secondary: #6b7280;
+  --color-success: #12a348;
+  --color-info: #4389fa;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -79,6 +86,13 @@
 }
 
 .dark {
+  --color-primary: #2676f7;
+  --color-secondary: #9ca3af;
+  --color-success: #22c55e;
+  --color-info: #529df8;
+  --color-warning: #facc15;
+  --color-danger: #ef4444;
+
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -119,4 +133,29 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.primary {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+}
+.secondary {
+  background-color: var(--color-secondary) !important;
+  color: white !important;
+}
+.success {
+  background-color: var(--color-success) !important;
+  color: white !important;
+}
+.warning {
+  background-color: var(--color-warning) !important;
+  color: var(--background) !important;
+}
+.info {
+  background-color: var(--color-info) !important;
+  color: white !important;
+}
+.danger {
+  background-color: var(--color-danger) !important;
+  color: white !important;
 }

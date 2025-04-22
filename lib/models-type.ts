@@ -4,10 +4,25 @@ export type TableThModel = {
 };
 
 export type FormState = {
-  title?: string,
+  title?: string;
   errors?: {
     [key: string]: string[] | undefined;
   };
   success?: boolean;
   message?: string;
 };
+
+export type BreadcrumbModel = {
+  name: string;
+  url?: string;
+}
+
+export type PaginateResult<T> = {
+  data: T[]
+  meta: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}

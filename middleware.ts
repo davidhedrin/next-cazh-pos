@@ -15,13 +15,13 @@ import { NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
   if (!token) {
-    return redirectToLogin(request);
+    return redirectTo(request, "/auth");
   }
   return NextResponse.next();
 }
 
-function redirectToLogin(request: NextRequest) {
-  const loginUrl = new URL("/auth", request.nextUrl.origin);
+function redirectTo(request: NextRequest, url: string) {
+  const loginUrl = new URL(url, request.nextUrl.origin);
   return NextResponse.redirect(loginUrl);
 }
 

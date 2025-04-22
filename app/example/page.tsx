@@ -1,7 +1,6 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   Card,
   CardAction,
@@ -10,6 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+
+import data from "./data.json"
+
+// Table Component Here
 import {
   Table,
   TableBody,
@@ -17,13 +20,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-
-import data from "./data.json"
+} from "@/components/ui/table";
 import { useState } from "react"
-import TableTopToolbar from "@/components/table-top-toolbar"
-import TablePagination from "@/components/table-pagination"
-
+import TableTopToolbar from "@/components/table-top-toolbar";
+import TablePagination from "@/components/table-pagination";
+import { Checkbox } from "@/components/ui/checkbox";
 import { TableThModel } from "@/lib/models-type";
 
 export default function Page() {

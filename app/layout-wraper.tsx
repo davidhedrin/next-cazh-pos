@@ -13,7 +13,7 @@ import { ModeToggle } from '@/components/mode-toggle';
 
 export default function LayoutWraper({ children }: Readonly<{ children: React.ReactNode; }>) {
   const pathname = usePathname();
-  const isAuthPage = pathname === '/' || pathname.startsWith('/auth');
+  const isAuthPage = pathname === '/' || pathname === '/not-found' || pathname.startsWith('/auth');
 
   return (
     <div>
@@ -31,7 +31,7 @@ export default function LayoutWraper({ children }: Readonly<{ children: React.Re
             <SiteHeader />
             <div className="flex flex-1 flex-col">
               <div className="@container/main flex flex-1 flex-col gap-2">
-                <div className="relative flex flex-col gap-3 overflow-auto p-4 lg:p-6">
+                <div className="relative flex flex-col gap-3 overflow-auto p-4 lg:p-5">
                   {children}
                 </div>
               </div>

@@ -34,7 +34,7 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
         description: `Welcome back ${email}`,
         richColors: true
       });
-      push("/dashboard");
+      push("/apps/dashboard");
     } else if (state?.success == false && state.message != null) {
       toast.warning("Invalid credentials!", {
         description: state.message,

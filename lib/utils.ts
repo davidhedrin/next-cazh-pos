@@ -30,3 +30,7 @@ export function formatDate(dateString: string | Date, dtStyle: "short" | "full" 
     timeStyle: tmStyle,
   }).format(date);
 }
+
+export function removeListStateByIndex<T>(array: T[], index: number): T[] {
+  return array.filter((_, i) => i !== index);
+}

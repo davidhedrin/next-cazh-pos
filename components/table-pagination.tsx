@@ -1,5 +1,4 @@
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -17,55 +16,96 @@ import {
 import { Dispatch, SetStateAction } from "react"
 
 type TablePaginationProps = {
-  perPage: string;
-  pageTable: string;
+  perPage: number;
+  pageTable: number;
   totalPage: number;
-  setPerPage: Dispatch<SetStateAction<string>>;
-  setPageTable: Dispatch<SetStateAction<string>>;
+  totalCount: number;
+  setPerPage: Dispatch<SetStateAction<number>>;
+  setPageTable: Dispatch<SetStateAction<number>>;
+  fatchData?: (page?: number, countPage?: number) => Promise<void>;
+
+  inputPage: string;
+  setInputPage: Dispatch<SetStateAction<string>>;
 }
 
 export default function TablePagination({
   perPage,
   pageTable,
   totalPage,
+  totalCount,
   setPerPage,
   setPageTable,
-} : TablePaginationProps) {
+  fatchData,
+
+  inputPage,
+  setInputPage,
+}: TablePaginationProps) {
+  const changePaginate = async (page: number, countPage?: number) => {
+    if (fatchData) {
+      setPageTable(page);
+      await fatchData(page, countPage);
+    }
+  };
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex-1 text-sm flex">
         <div className="items-center gap-2 flex">
-          <Label htmlFor="rows-per-page" className="text-sm font-medium">
+          <span className="text-sm">
             Show
-          </Label>
-          <Select value={perPage} onValueChange={(val) => setPerPage(val)}>
+          </span>
+          <Select value={perPage.toString()} onValueChange={(val) => {
+            setPerPage(parseInt(val));
+            changePaginate(1, parseInt(val));
+          }}>
             <SelectTrigger size="sm">
               <SelectValue placeholder="Select a rows" />
             </SelectTrigger>
             <SelectContent>
-              {[10, 20, 30, 40, 50].map((pageSize) => (
+              {[5, 10, 15, 20, 25].map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`}>
                   {pageSize}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Label htmlFor="rows-per-page" className="hidden text-sm font-medium lg:block">
-            Rows per Page
-          </Label>
+          <span className="hidden text-sm lg:block">
+            rows of {totalCount} entries
+          </span>
         </div>
       </div>
       <div className="flex items-center gap-6 w-fit">
-        <div className="flex items-center text-sm font-medium gap-2">
+        <div className="flex items-center text-sm gap-2">
           <div>Page</div>
-          <Input value={pageTable} onChange={(e) => setPageTable(e.target.value)} className="h-8 w-10 text-center px-2" type="text" placeholder="0" />
+          <Input value={inputPage}
+            onChange={(e) => {
+              setInputPage(e.target.value);
+              if (e.target.value.trim() != "" && !isNaN(parseInt(e.target.value))){
+                let numPage = parseInt(e.target.value);
+                if(numPage > totalPage) numPage = totalPage;
+                else if(numPage < 1) numPage = 1;
+                changePaginate(numPage);
+              }
+            }}
+            onBlur={(e) => {
+              if(e.target.value.trim() === "" || isNaN(parseInt(e.target.value))){
+                setInputPage("1");
+                changePaginate(1);
+              }
+            }}
+            className="h-8 w-10 text-center px-2 input-no-spinner" type="number" min={1} max={totalPage}
+          />
           <div><span className="pe-1">of</span> {totalPage}</div>
         </div>
+
         <div className="flex items-center gap-2 ml-0">
           <Button
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
-            disabled={true}
+            disabled={pageTable <= 1}
+            onClick={() => {
+              if (pageTable >= 1) changePaginate(1);
+            }}
           >
             <span className="sr-only">Go to first page</span>
             <IconChevronsLeft />
@@ -74,7 +114,10 @@ export default function TablePagination({
             variant="outline"
             className="size-8"
             size="icon"
-            disabled={true}
+            disabled={pageTable <= 1}
+            onClick={() => {
+              if (pageTable >= 1) changePaginate(pageTable - 1)
+            }}
           >
             <span className="sr-only">Go to previous page</span>
             <IconChevronLeft />
@@ -83,7 +126,10 @@ export default function TablePagination({
             variant="outline"
             className="size-8"
             size="icon"
-            disabled={false}
+            disabled={pageTable >= totalPage}
+            onClick={() => {
+              if (pageTable <= totalPage) changePaginate(pageTable + 1)
+            }}
           >
             <span className="sr-only">Go to next page</span>
             <IconChevronRight />
@@ -92,7 +138,10 @@ export default function TablePagination({
             variant="outline"
             className="hidden size-8 lg:flex"
             size="icon"
-            disabled={false}
+            disabled={pageTable >= totalPage}
+            onClick={() => {
+              if (pageTable <= totalPage) changePaginate(totalPage)
+            }}
           >
             <span className="sr-only">Go to last page</span>
             <IconChevronsRight />

@@ -1,7 +1,13 @@
 export type TableThModel = {
   key: string; // must be colomn name table
   name: string;
+  IsVisible?: boolean;
 };
+
+export type TableShortList = {
+  key?: string;
+  sort?: string;
+}
 
 export type FormState = {
   title?: string;

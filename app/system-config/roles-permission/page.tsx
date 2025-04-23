@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TableTopToolbar from "@/components/table-top-toolbar";
 import TablePagination from "@/components/table-pagination";
 import { TableThModel, TableShortList } from "@/lib/models-type";
@@ -20,6 +20,7 @@ import BreadcrumbListing from "@/components/breadcrumb-list";
 import { GetData } from "@/app/api/roles-permission/action";
 import { Roles } from "@prisma/client";
 import Loading from "@/components/loading";
+import { toast } from "sonner";
 
 export default function RolesPermission() {
   const listBreadcrumb = [
@@ -44,42 +45,60 @@ export default function RolesPermission() {
 
   const [inputSearch, setInputSearch] = useState("");
   const [fatchLoading, setFatchLoading] = useState(true);
+
+  const fatchDataUser = async (page: number = pageTable, countPage: number = perPage) => {
+    setFatchLoading(true);
+    const selectObj = Object.fromEntries(tblThColomns.filter(col => col.IsVisible).map(col => [col.key, true]));
+    const orderObj = tblSortList.filter(col => col.sort && col.sort.trim() !== "").map(col => ({[col.key as string]: col.sort}));
+
+    try {
+      const result = await GetData({
+        curPage: page,
+        perPage: countPage,
+        where: {
+          OR: [
+            { name: { contains: inputSearch.trim(), mode: "insensitive" } },
+            { slug: { contains: inputSearch.trim(), mode: "insensitive" } }
+          ]
+        },
+        select: {
+          id: true,
+          ...selectObj
+        },
+        orderBy: orderObj
+      });
+      setTotalPage(result.meta.totalPages);
+      setTotalCount(result.meta.total);
+      setPageTable(result.meta.page);
+      setInputPage(result.meta.page.toString());
+      
+      setDatas(result.data);
+    } catch (error: any) {
+      toast.warning("Something's gone wrong!", {
+        description: "We can't proccess your request, Please try again.",
+        richColors: true
+      });
+    }
+    setFatchLoading(false);
+  };
+  
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if(isFirstRender.current === true){ isFirstRender.current = false; return;};
     const timer = setTimeout(() => {
       fatchDataUser(1);
     }, 300);
     return () => clearTimeout(timer);
   }, [inputSearch]);
   useEffect(() => {
-    fatchDataUser(1)
+    if(isFirstRender.current === true){ isFirstRender.current = false; return;};
+    fatchDataUser(1);
   }, [tblThColomns]);
 
-  const fatchDataUser = async (page: number = pageTable, countPage: number = perPage) => {
-    setFatchLoading(true);
-    const selectObj = Object.fromEntries(tblThColomns.filter(col => col.IsVisible).map(col => [col.key, true]));
-
-    const result = await GetData({
-      curPage: page,
-      perPage: countPage,
-      where: {
-        OR: [
-          { name: { contains: inputSearch.trim(), mode: "insensitive" } },
-          { slug: { contains: inputSearch.trim(), mode: "insensitive" } }
-        ]
-      },
-      select: {
-        id: true,
-        ...selectObj
-      }
-    });
-    setTotalPage(result.meta.totalPages);
-    setTotalCount(result.meta.total);
-    setPageTable(result.meta.page);
-    setInputPage(result.meta.page.toString());
-
-    setDatas(result.data);
-    setFatchLoading(false);
-  };
+  // Reset Sort
+  useEffect(() => {
+    if(tblSortList.length === 0) fatchDataUser();
+  }, [tblSortList]);
 
   return (
     <>

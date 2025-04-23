@@ -6,7 +6,7 @@ export type TableThModel = {
 
 export type TableShortList = {
   key?: string;
-  sort?: string;
+  sort?: "asc" | "desc" | "";
 }
 
 export type FormState = {

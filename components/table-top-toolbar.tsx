@@ -15,6 +15,7 @@ import { Dispatch, SetStateAction } from "react"
 import { TableShortList, TableThModel } from "@/lib/models-type";
 import { Check, ChevronsUpDown, Settings2 } from "lucide-react";
 import { cn, removeListStateByIndex } from "@/lib/utils";
+import { Badge } from "./ui/badge";
 
 type TableTopToolbarProps = {
   tblName?: string;
@@ -27,7 +28,7 @@ type TableTopToolbarProps = {
   fatchData?: (page?: number) => Promise<void>;
 };
 
-export default function TableTopToolbar({ 
+export default function TableTopToolbar({
   tblName,
   thColomn,
   tblSortList,
@@ -35,20 +36,20 @@ export default function TableTopToolbar({
   setTblThColomns,
   setTblSortList,
   setInputSearch,
-  fatchData 
+  fatchData
 }: TableTopToolbarProps) {
   const addSort = () => {
-    console.log("addSort");
-    const newRow: TableShortList = {key: "", sort: ""};
+    const newRow: TableShortList = { key: "", sort: "" };
     setTblSortList && setTblSortList(prev => [...prev, newRow]);
   };
+
   const updateSortField = (idx: number, field: keyof TableShortList, value: string) => {
     setTblSortList && setTblSortList(prev =>
       prev.map((item, i) =>
         i === idx ? { ...item, [field]: value } : item
       )
     )
-  }
+  };
 
   return (
     <div>
@@ -82,6 +83,14 @@ export default function TableTopToolbar({
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm">
                 <i className='bx bx-sort'></i> Sort
+                {tblSortList && tblSortList.length > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="h-[16px] rounded-[3.2px] px-[3.5px] font-mono font-normal text-[10.4px]"
+                  >
+                    {tblSortList.length}
+                  </Badge>
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="flex w-full max-w-[var(--radix-popover-content-available-width)] origin-[var(--radix-popover-content-transform-origin)] flex-col gap-2 p-4" align="end">
@@ -97,7 +106,7 @@ export default function TableTopToolbar({
                     thColomn && thColomn?.length > 0 && (
                       <div key={i} className="flex gap-2 overflow-y-auto">
                         <Select value={x.key} onValueChange={(val) => updateSortField(i, "key", val)}>
-                          <SelectTrigger className="w-[140px]" size="sm">
+                          <SelectTrigger className="min-w-[160px] max-w-[160px]" size="sm">
                             <SelectValue placeholder="Select a colomn" />
                           </SelectTrigger>
                           <SelectContent>
@@ -109,8 +118,8 @@ export default function TableTopToolbar({
                           </SelectContent>
                         </Select>
                         <Select value={x.sort} onValueChange={(val) => updateSortField(i, "sort", val)}>
-                          <SelectTrigger size="sm">
-                            <SelectValue placeholder="Sort type" />
+                          <SelectTrigger className="min-w-[80px] max-w-[80px]" size="sm">
+                            <SelectValue placeholder="Type" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="asc">Asc</SelectItem>
@@ -136,10 +145,10 @@ export default function TableTopToolbar({
                     Reset
                   </Button>
                 </div>
-                
-                <Button onClick={addSort} size="sm" className="rounded primary h-7">
-                    Done
-                  </Button>
+
+                <Button onClick={() => fatchData && fatchData()} size="sm" className="rounded primary h-7">
+                  Apply
+                </Button>
               </div>
             </PopoverContent>
           </Popover>

@@ -188,20 +188,20 @@ function ModalAddEdit() {
     >
       <div className='grid grid-cols-12 gap-3'>
         <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
-          <Label htmlFor="email">Code</Label>
+          <Label htmlFor="slug">Code</Label>
           <div>
-            <Input id="email" name="email" type="text" placeholder="Enter unique role code" />
+            <Input id="slug" name="slug" type="text" placeholder="Enter unique role code" />
             {/* {stateForm.errors?.email && <ZodErrors err={stateForm.errors?.email} />} */}
           </div>
         </div>
         <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
-          <Label htmlFor="email">Status</Label>
+          <Label htmlFor="is_active">Status</Label>
           <div>
-            <Select>
+            <Select name="is_active">
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select status role" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent id="is_active">
                 <SelectGroup>
                   <SelectItem value="apple">Active</SelectItem>
                   <SelectItem value="banana">Inactive</SelectItem>
@@ -212,9 +212,9 @@ function ModalAddEdit() {
           </div>
         </div>
         <div className="col-span-12 md:col-span-4 grid gap-2">
-          <Label htmlFor="email">Name</Label>
+          <Label htmlFor="name">Name</Label>
           <div>
-            <Input id="email" name="email" type="text" placeholder="Enter role name" />
+            <Input id="name" name="name" type="text" placeholder="Enter role name" />
             {/* {stateForm.errors?.email && <ZodErrors err={stateForm.errors?.email} />} */}
           </div>
         </div>

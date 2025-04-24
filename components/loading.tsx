@@ -1,6 +1,11 @@
-import React from 'react'
+"use client";
+
+import { useLoading } from "@/components/loading-context";
 
 export default function Loading() {
+  const { isLoading } = useLoading();
+
+  if (!isLoading) return null;
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-sm">
       <div className="flex flex-col items-center space-y-1">

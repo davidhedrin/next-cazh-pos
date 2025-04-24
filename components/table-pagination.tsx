@@ -62,7 +62,7 @@ export default function TablePagination({
               <SelectValue placeholder="Select a rows" />
             </SelectTrigger>
             <SelectContent>
-              {[5, 10, 15, 20, 25].map((pageSize) => (
+              {[10, 15, 20, 25].map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`}>
                   {pageSize}
                 </SelectItem>
@@ -89,8 +89,7 @@ export default function TablePagination({
             }}
             onBlur={(e) => {
               if(e.target.value.trim() === "" || isNaN(parseInt(e.target.value))){
-                setInputPage("1");
-                changePaginate(1);
+                setInputPage(pageTable.toString());
               }
             }}
             className="h-8 w-10 text-center px-2 input-no-spinner" type="number" min={1} max={totalPage}

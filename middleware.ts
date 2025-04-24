@@ -14,9 +14,10 @@ import { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.AUTH_SECRET });
-  if (!token) {
-    return redirectTo(request, "/auth");
-  }
+  
+  if (!token && !request.nextUrl.pathname.startsWith("/auth")) return redirectTo(request, "/auth");
+  if (token && request.nextUrl.pathname.startsWith("/auth")) return redirectTo(request, "/apps/dashboard");
+
   return NextResponse.next();
 }
 
@@ -27,8 +28,8 @@ function redirectTo(request: NextRequest, url: string) {
 
 export const config = {
   matcher: [
+    "/auth/:path*",
     "/apps/:path*",
     "/system-config/:path*",
-    "/example/:path*",
   ],
 }

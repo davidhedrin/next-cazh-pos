@@ -5,8 +5,10 @@ import "boxicons/css/boxicons.min.css";
 import LayoutWraper from "@/app/layout-wraper";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LoadingProvider } from '@/components/loading-context';
 
 import { Toaster } from "@/components/ui/sonner";
+import Loading from "@/components/loading";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,7 +41,10 @@ export default function RootLayout({
         >
           <Toaster position="top-right" richColors={true} closeButton visibleToasts={4} />
           <SessionProvider>
-            <LayoutWraper children={children} />
+            <LoadingProvider>
+              <Loading />
+              <LayoutWraper children={children} />
+            </LoadingProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>

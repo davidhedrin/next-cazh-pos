@@ -51,6 +51,7 @@ model Menus {
 model Roles {
   id         Int         @id @default(autoincrement())
   slug       String      @unique
+  slug_name  String
   name       String?
   store_id   Int?
   is_active  Boolean     @default(true)

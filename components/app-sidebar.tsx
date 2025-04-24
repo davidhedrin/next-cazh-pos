@@ -31,11 +31,22 @@ const data = {
           slug: "app-dsb"
         },
         {
+          title: "Catalog",
+          url: "#",
+          icon: "bx bx-cart-add",
+          slug: "app-ctl"
+        },
+        {
           title: "Transactions",
           url: "#",
           icon: "bx bx-receipt",
           slug: "app-trs"
         },
+      ]
+    },
+    {
+      groupName: "Modules",
+      menus: [
         {
           title: "Absence",
           url: "#",

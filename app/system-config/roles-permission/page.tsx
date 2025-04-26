@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import TableTopToolbar from "@/components/table-top-toolbar";
 import TablePagination from "@/components/table-pagination";
 import { TableThModel, TableShortList } from "@/lib/models-type";
@@ -17,8 +17,8 @@ import BreadcrumbListing from "@/components/breadcrumb-list";
 
 import { Badge } from "@/components/ui/badge"
 import { formatDate } from "@/lib/utils";
-import { GetData } from "@/app/api/roles-permission/action";
-import { Roles } from "@prisma/client";
+import { GetDataRoles } from "@/app/api/roles-permission/action";
+import { Menus, Roles } from "@prisma/client";
 import { toast } from "sonner";
 
 import Modal from "@/components/modal-dialog";
@@ -26,6 +26,9 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { GetDataMenus } from '@/app/api/action';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function RolesPermission() {
   const { setLoading } = useLoading();
@@ -34,14 +37,6 @@ export default function RolesPermission() {
     { name: "Roles & Permissions", url: "/system-config/roles-permission" }
   ];
 
-  const [tblThColomns, setTblThColomns] = useState<TableThModel[]>([
-    { key: "name", name: "Name", IsVisible: true },
-    { key: "slug_name", name: "Code", IsVisible: true },
-    { key: "is_active", name: "Status", IsVisible: true },
-    { key: "createdBy", name: "Created By", IsVisible: true },
-    { key: "createdAt", name: "Created At", IsVisible: true },
-  ]);
-  const [tblSortList, setTblSortList] = useState<TableShortList[]>([]);
   const [inputPage, setInputPage] = useState("1");
   const [pageTable, setPageTable] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -49,13 +44,21 @@ export default function RolesPermission() {
   const [totalCount, setTotalCount] = useState(0);
   const [datas, setDatas] = useState<Roles[] | null>(null);
   const [inputSearch, setInputSearch] = useState("");
-  const fatchDataUser = async (page: number = pageTable, countPage: number = perPage) => {
+  const [tblSortList, setTblSortList] = useState<TableShortList[]>([]);
+  const [tblThColomns, setTblThColomns] = useState<TableThModel[]>([
+    { key: "name", name: "Name", IsVisible: true },
+    { key: "slug_name", name: "Code", IsVisible: true },
+    { key: "is_active", name: "Status", IsVisible: true },
+    { key: "createdBy", name: "Created By", IsVisible: true },
+    { key: "createdAt", name: "Created At", IsVisible: true },
+  ]);
+  const fatchDatas = async (page: number = pageTable, countPage: number = perPage) => {
     setLoading(true);
     const selectObj = Object.fromEntries(tblThColomns.filter(col => col.IsVisible).map(col => [col.key, true]));
     const orderObj = tblSortList.filter(col => col.sort && col.sort.trim() !== "").map(col => ({ [col.key as string]: col.sort }));
 
     try {
-      const result = await GetData({
+      const result = await GetDataRoles({
         curPage: page,
         perPage: countPage,
         where: {
@@ -87,16 +90,16 @@ export default function RolesPermission() {
 
   useEffect(() => {
     if (isFirstRender) return;
-    if (tblSortList.length === 0) fatchDataUser();
+    if (tblSortList.length === 0) fatchDatas();
   }, [tblSortList]);
   useEffect(() => {
     if (isFirstRender) return;
-    fatchDataUser(1);
+    fatchDatas(1);
   }, [tblThColomns]);
   useEffect(() => {
     if (isFirstRender) return;
     const timer = setTimeout(() => {
-      fatchDataUser(1);
+      fatchDatas(1);
     }, 300);
     return () => clearTimeout(timer);
   }, [inputSearch]);
@@ -104,7 +107,7 @@ export default function RolesPermission() {
   const [isFirstRender, setIsFirstRender] = useState(true);
   useEffect(() => {
     setIsFirstRender(false);
-    fatchDataUser();
+    fatchDatas();
   }, []);
 
   return (
@@ -119,7 +122,7 @@ export default function RolesPermission() {
         setTblThColomns={setTblThColomns}
         setTblSortList={setTblSortList}
         setInputSearch={setInputSearch}
-        fatchData={() => fatchDataUser(pageTable)}
+        fatchData={() => fatchDatas(pageTable)}
 
         DialogAdd={ModalAddEdit}
       />
@@ -132,7 +135,6 @@ export default function RolesPermission() {
                 tblThColomns.map((x, i) => {
                   if (x.IsVisible) return <TableHead key={x.key}>{x.name}</TableHead>
                 })
-
               }
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
@@ -166,7 +168,7 @@ export default function RolesPermission() {
         totalCount={totalCount}
         setPerPage={setPerPage}
         setPageTable={setPageTable}
-        fatchData={fatchDataUser}
+        fatchData={fatchDatas}
 
         inputPage={inputPage}
         setInputPage={setInputPage}
@@ -176,17 +178,116 @@ export default function RolesPermission() {
 }
 
 function ModalAddEdit() {
+  type dtoModuleAccess = {
+    menu_id?: number,
+    menu_name?: string | null,
+    create?: boolean,
+    read?: boolean,
+    update?: boolean,
+    delete?: boolean,
+    is_selected?: boolean
+  };
+
+  const [inputPage, setInputPage] = useState("1");
+  const [pageTable, setPageTable] = useState(1);
+  const [perPage, setPerPage] = useState(5);
+  const [totalPage, setTotalPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [datas, setDatas] = useState<dtoModuleAccess[] | null>(null);
+  const [inputSearch, setInputSearch] = useState("");
+  const [tblSortList, setTblSortList] = useState<TableShortList[]>([]);
+  const [tblThColomns, setTblThColomns] = useState<TableThModel[]>([
+    { key: "name", name: "Name", IsVisible: true },
+    { key: "slug", name: "Code", IsVisible: false },
+    { key: "is_active", name: "Status", IsVisible: false },
+  ]);
+  const fatchDatas = async (page: number = pageTable, countPage: number = perPage) => {
+    const selectObj = Object.fromEntries(tblThColomns.filter(col => col.IsVisible).map(col => [col.key, true]));
+    const orderObj = tblSortList.filter(col => col.sort && col.sort.trim() !== "").map(col => ({ [col.key as string]: col.sort }));
+
+    try {
+      const result = await GetDataMenus({
+        curPage: page,
+        perPage: countPage,
+        where: {
+          OR: [
+            { name: { contains: inputSearch.trim(), mode: "insensitive" } },
+            { slug: { contains: inputSearch.trim(), mode: "insensitive" } }
+          ]
+        },
+        orderBy: orderObj,
+        select: {
+          id: true,
+          ...selectObj
+        },
+      });
+      setTotalPage(result.meta.totalPages);
+      setTotalCount(result.meta.total);
+      setPageTable(result.meta.page);
+      setInputPage(result.meta.page.toString());
+
+      setDatas(result.data.map(x => {
+        return {
+          menu_id: x.id,
+          menu_name: x.name,
+          read: false,
+          create: false,
+          update: false,
+          delete: false,
+          is_selected: false,
+        };
+      }));
+    } catch (error: any) {
+      toast.warning("Something's gone wrong!", {
+        description: "We can't proccess your request, Please try again.",
+        richColors: true
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isFirstRender) return;
+    if (tblSortList.length === 0) fatchDatas();
+  }, [tblSortList]);
+  useEffect(() => {
+    if (isFirstRender) return;
+    fatchDatas(1);
+  }, [tblThColomns]);
+  useEffect(() => {
+    if (isFirstRender) return;
+    const timer = setTimeout(() => {
+      fatchDatas(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputSearch]);
+
+  const [isFirstRender, setIsFirstRender] = useState(true);
+  const clickOpenModal = () => {
+    setIsFirstRender(false);
+    fatchDatas();
+  };
+
+  const toggleCheckbox = (index: number, field: keyof dtoModuleAccess) => {
+    if (datas === null) return;
+    const updated = [...datas];
+    updated[index] = {
+      ...updated[index],
+      [field]: !updated[index][field]
+    };
+    setDatas(updated);
+  };
+
   return (
     <Modal className="sm:max-w-2xl"
-      title="Add Role & Permission"
+      title="Add Role - Permission"
       description="Here to add new access role & permission"
       btnOpen={
-        <Button variant="outline" size="sm">
+        <Button onClick={clickOpenModal} variant="outline" size="sm">
           <i className='bx bx-plus-circle text-lg'></i> New
         </Button>
       }
     >
-      <div className='grid grid-cols-12 gap-3'>
+      <div className='grid grid-cols-12 gap-3 mb-3'>
         <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
           <Label htmlFor="slug">Code</Label>
           <div>
@@ -218,6 +319,70 @@ function ModalAddEdit() {
             {/* {stateForm.errors?.email && <ZodErrors err={stateForm.errors?.email} />} */}
           </div>
         </div>
+      </div>
+
+      <p className="font-medium mb-1">
+        Module Access:
+      </p>
+
+      <div className="grid gap-2 mb-4">
+        <TableTopToolbar
+          inputSearch={inputSearch}
+          thColomn={tblThColomns}
+          tblSortList={tblSortList}
+          setTblSortList={setTblSortList}
+          setInputSearch={setInputSearch}
+          fatchData={() => fatchDatas(pageTable)}
+        />
+        <ScrollArea className="max-h-[300px]">
+          <div className="overflow-hidden rounded-lg border">
+            <Table>
+              <TableHeader className="bg-muted sticky top-0 z-10">
+                <TableRow>
+                  <TableHead><Checkbox id="cb_all_menu" /></TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Read</TableHead>
+                  <TableHead>Create</TableHead>
+                  <TableHead>Update</TableHead>
+                  <TableHead>Delete</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {
+                  datas != null && datas?.length > 0 ? datas.map((data, i) => (
+                    <TableRow key={data.menu_id}>
+                      <TableCell><Checkbox checked={data.is_selected} onCheckedChange={() => toggleCheckbox(i, 'is_selected')} id={"cb_menu_" + i} /></TableCell>
+                      <TableCell>{data.menu_name}</TableCell>
+                      <TableCell><Checkbox checked={data.read} onCheckedChange={() => toggleCheckbox(i, 'read')} id={"cb_r_menu_" + i} /></TableCell>
+                      <TableCell><Checkbox checked={data.create} onCheckedChange={() => toggleCheckbox(i, 'create')} id={"cb_c_menu_" + i} /></TableCell>
+                      <TableCell><Checkbox checked={data.update} onCheckedChange={() => toggleCheckbox(i, 'update')} id={"cb_u_menu_" + i} /></TableCell>
+                      <TableCell><Checkbox checked={data.delete} onCheckedChange={() => toggleCheckbox(i, 'delete')} id={"cb_d_menu_" + i} /></TableCell>
+                    </TableRow>
+                  )) : <TableRow>
+                    <TableCell className="text-center" colSpan={tblThColomns.length + 1}><i>No data found!</i></TableCell>
+                  </TableRow>
+                }
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
+        <TablePagination
+          perPage={perPage}
+          pageTable={pageTable}
+          totalPage={totalPage}
+          totalCount={totalCount}
+          setPerPage={setPerPage}
+          setPageTable={setPageTable}
+          fatchData={fatchDatas}
+
+          inputPage={inputPage}
+          setInputPage={setInputPage}
+        />
+      </div>
+      
+      <div className="flex items-center justify-end gap-2">
+        <Button className="primary" size={'sm'}>Submit</Button>
+        <Button variant={'outline'} size={'sm'}>Cancel</Button>
       </div>
     </Modal>
   )

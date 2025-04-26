@@ -23,6 +23,11 @@ export type BreadcrumbModel = {
   url?: string;
 }
 
+export type CommonParams = {
+  curPage?: number;
+  perPage?: number;
+}
+
 export type PaginateResult<T> = {
   data: T[]
   meta: {

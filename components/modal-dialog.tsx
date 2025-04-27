@@ -2,7 +2,6 @@
 
 import React, { JSX } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type ModalDialog = {
@@ -23,21 +22,19 @@ export default function ModalDialog({
   const isBtnOpenJSX = React.isValidElement(btnOpen);
 
   return (
-    <div>
-      <Dialog>
-        <DialogTrigger asChild={isBtnOpenJSX}>
-          {btnOpen ?? "Open"}
-        </DialogTrigger>
-        <DialogContent className={cn("p-4 gap-y-4 text-sm", className)} {...props}>
-          <DialogHeader className="justify-center gap-y-0">
-            <DialogTitle className="text-base">{title ?? "Modal Title"}</DialogTitle>
-            {description && (<DialogDescription>{description}</DialogDescription>)}
-          </DialogHeader>
-          <div>
-            {children ?? "Conten Here"}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+    <Dialog>
+      <DialogTrigger asChild={isBtnOpenJSX}>
+        {btnOpen ?? "Open"}
+      </DialogTrigger>
+      <DialogContent className={cn("p-4 gap-y-4 text-sm", className)} {...props}>
+        <DialogHeader className="justify-center gap-y-0">
+          <DialogTitle className="text-base">{title ?? "Modal Title"}</DialogTitle>
+          {description && (<DialogDescription>{description}</DialogDescription>)}
+        </DialogHeader>
+        <div>
+          {children ?? "Conten Here"}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

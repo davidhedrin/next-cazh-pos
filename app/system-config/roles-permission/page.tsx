@@ -12,12 +12,12 @@ import {
 import { useEffect, useState } from "react";
 import TableTopToolbar from "@/components/table-top-toolbar";
 import TablePagination from "@/components/table-pagination";
-import { TableThModel, TableShortList } from "@/lib/models-type";
+import { TableThModel, TableShortList, FormState } from "@/lib/models-type";
 import BreadcrumbListing from "@/components/breadcrumb-list";
 
 import { Badge } from "@/components/ui/badge"
-import { formatDate } from "@/lib/utils";
-import { GetDataRoles } from "@/app/api/roles-permission/action";
+import { formatDate, SonnerPromise } from "@/lib/utils";
+import { GetDataRoles } from "@/app/api/system-config/action";
 import { Menus, Roles } from "@prisma/client";
 import { toast } from "sonner";
 
@@ -29,6 +29,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { GetDataMenus } from '@/app/api/action';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DialogClose, DialogFooter } from '@/components/ui/dialog';
 
 export default function RolesPermission() {
   const { setLoading } = useLoading();
@@ -177,6 +178,10 @@ export default function RolesPermission() {
   )
 }
 
+
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { z } from 'zod';
+import { ZodErrors } from '@/components/zod-errors';
 function ModalAddEdit() {
   type dtoModuleAccess = {
     menu_id?: number,
@@ -193,7 +198,7 @@ function ModalAddEdit() {
   const [perPage, setPerPage] = useState(5);
   const [totalPage, setTotalPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  const [datas, setDatas] = useState<dtoModuleAccess[] | null>(null);
+  const [datas, setDatas] = useState<dtoModuleAccess[]>([]);
   const [inputSearch, setInputSearch] = useState("");
   const [tblSortList, setTblSortList] = useState<TableShortList[]>([]);
   const [tblThColomns, setTblThColomns] = useState<TableThModel[]>([
@@ -227,14 +232,15 @@ function ModalAddEdit() {
       setInputPage(result.meta.page.toString());
 
       setDatas(result.data.map(x => {
+        const findInStore = dataStore.find(y => y.menu_id === x.id);
         return {
           menu_id: x.id,
           menu_name: x.name,
-          read: false,
-          create: false,
-          update: false,
-          delete: false,
-          is_selected: false,
+          read: findInStore?.read ?? false,
+          create: findInStore?.create ?? false,
+          update: findInStore?.update ?? false,
+          delete: findInStore?.delete ?? false,
+          is_selected: findInStore?.is_selected ?? false,
         };
       }));
     } catch (error: any) {
@@ -267,123 +273,186 @@ function ModalAddEdit() {
     fatchDatas();
   };
 
-  const toggleCheckbox = (index: number, field: keyof dtoModuleAccess) => {
+  const toggleCheckbox = (index: number, field: keyof dtoModuleAccess, value: boolean) => {
     if (datas === null) return;
     const updated = [...datas];
-    updated[index] = {
+    var dataUpdate: dtoModuleAccess = {
       ...updated[index],
-      [field]: !updated[index][field]
+      [field]: value,
     };
+
+    if (field === "is_selected") {
+      if (value === false) {
+        dataUpdate.read = false;
+        dataUpdate.create = false;
+        dataUpdate.update = false;
+        dataUpdate.delete = false;
+
+        setDataStore(prev => prev.filter(x => x.menu_id !== dataUpdate.menu_id));
+      } else {
+        setDataStore(prev => {
+          const exists = prev.find(x => x.menu_id === dataUpdate.menu_id);
+          if (exists) return prev;
+          dataUpdate.read = true;
+          return [...prev, dataUpdate];
+        });
+      };
+    } else {
+      setDataStore(prev =>
+        prev.map(x => x.menu_id === dataUpdate.menu_id ? { ...x, [field]: value } : x)
+      );
+    };
+
+    updated[index] = dataUpdate;
     setDatas(updated);
   };
+  const [dataStore, setDataStore] = useState<dtoModuleAccess[]>([]);
+
+  const [stateForm, setStateForm] = useState<FormState>({ success: false, errors: {} });
+  const FormSchema = z.object({
+    slug: z.string().min(1, { message: 'Slug is required field.' }).trim(),
+    is_active: z.string().min(1, { message: 'Status is required field.' }),
+    name: z.string().min(1, { message: 'Name is required field.' }).trim(),
+  });
+
+  const handleFormSubmit = (formData: FormData) => {
+    const data = Object.fromEntries(formData);
+    const valResult = FormSchema.safeParse(data);
+    if (!valResult.success) {
+      setStateForm({
+        success: false,
+        errors: valResult.error.flatten().fieldErrors,
+      });
+      return;
+    };
+
+    setStateForm({ success: true, errors: {} });
+    const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
+    try {
+
+    } catch (error: any) {
+      toast.warning("Request Failed!", {
+        description: error.message,
+        richColors: true
+      });
+    }
+    toast.dismiss(sonnerSubmit);
+  }
 
   return (
-    <Modal className="sm:max-w-2xl"
-      title="Add Role - Permission"
-      description="Here to add new access role & permission"
-      btnOpen={
+    <Dialog>
+      <DialogTrigger asChild>
         <Button onClick={clickOpenModal} variant="outline" size="sm">
           <i className='bx bx-plus-circle text-lg'></i> New
         </Button>
-      }
-    >
-      <div className='grid grid-cols-12 gap-3 mb-3'>
-        <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
-          <Label htmlFor="slug">Code</Label>
-          <div>
-            <Input id="slug" name="slug" type="text" placeholder="Enter unique role code" />
-            {/* {stateForm.errors?.email && <ZodErrors err={stateForm.errors?.email} />} */}
+      </DialogTrigger>
+      <DialogContent className="p-4 text-sm sm:max-w-2xl">
+        <DialogHeader className="justify-center gap-y-0">
+          <DialogTitle className="text-base">Add Role - Permission</DialogTitle>
+          <DialogDescription>Here to add new access role & permission</DialogDescription>
+        </DialogHeader>
+        <form action={(formData) => handleFormSubmit(formData)}>
+          <div className='grid grid-cols-12 gap-3 mb-3'>
+            <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
+              <Label className="gap-0" htmlFor="slug">Code<span className="text-red-500">*</span></Label>
+              <div>
+                <Input id="slug" name="slug" type="text" placeholder="Enter unique role code" />
+                {stateForm.errors?.slug && <ZodErrors err={stateForm.errors?.slug} />}
+              </div>
+            </div>
+            <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
+              <Label className="gap-0" htmlFor="is_active">Status<span className="text-red-500">*</span></Label>
+              <div>
+                <Select name="is_active">
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select status role" />
+                  </SelectTrigger>
+                  <SelectContent id="is_active">
+                    <SelectGroup>
+                      <SelectItem value="true">Active</SelectItem>
+                      <SelectItem value="false">Inactive</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {stateForm.errors?.is_active && <ZodErrors err={stateForm.errors?.is_active} />}
+              </div>
+            </div>
+            <div className="col-span-12 md:col-span-4 grid gap-2">
+              <Label className="gap-0" htmlFor="name">Name<span className="text-red-500">*</span></Label>
+              <div>
+                <Input id="name" name="name" type="text" placeholder="Enter role name" />
+                {stateForm.errors?.name && <ZodErrors err={stateForm.errors?.name} />}
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
-          <Label htmlFor="is_active">Status</Label>
-          <div>
-            <Select name="is_active">
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select status role" />
-              </SelectTrigger>
-              <SelectContent id="is_active">
-                <SelectGroup>
-                  <SelectItem value="apple">Active</SelectItem>
-                  <SelectItem value="banana">Inactive</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            {/* {stateForm.errors?.email && <ZodErrors err={stateForm.errors?.email} />} */}
-          </div>
-        </div>
-        <div className="col-span-12 md:col-span-4 grid gap-2">
-          <Label htmlFor="name">Name</Label>
-          <div>
-            <Input id="name" name="name" type="text" placeholder="Enter role name" />
-            {/* {stateForm.errors?.email && <ZodErrors err={stateForm.errors?.email} />} */}
-          </div>
-        </div>
-      </div>
 
-      <p className="font-medium mb-1">
-        Module Access:
-      </p>
+          <p className="font-medium mb-1">
+            Module Access:
+          </p>
 
-      <div className="grid gap-2 mb-4">
-        <TableTopToolbar
-          inputSearch={inputSearch}
-          thColomn={tblThColomns}
-          tblSortList={tblSortList}
-          setTblSortList={setTblSortList}
-          setInputSearch={setInputSearch}
-          fatchData={() => fatchDatas(pageTable)}
-        />
-        <ScrollArea className="max-h-[300px]">
-          <div className="overflow-hidden rounded-lg border">
-            <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
-                <TableRow>
-                  <TableHead><Checkbox id="cb_all_menu" /></TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Read</TableHead>
-                  <TableHead>Create</TableHead>
-                  <TableHead>Update</TableHead>
-                  <TableHead>Delete</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {
-                  datas != null && datas?.length > 0 ? datas.map((data, i) => (
-                    <TableRow key={data.menu_id}>
-                      <TableCell><Checkbox checked={data.is_selected} onCheckedChange={() => toggleCheckbox(i, 'is_selected')} id={"cb_menu_" + i} /></TableCell>
-                      <TableCell>{data.menu_name}</TableCell>
-                      <TableCell><Checkbox checked={data.read} onCheckedChange={() => toggleCheckbox(i, 'read')} id={"cb_r_menu_" + i} /></TableCell>
-                      <TableCell><Checkbox checked={data.create} onCheckedChange={() => toggleCheckbox(i, 'create')} id={"cb_c_menu_" + i} /></TableCell>
-                      <TableCell><Checkbox checked={data.update} onCheckedChange={() => toggleCheckbox(i, 'update')} id={"cb_u_menu_" + i} /></TableCell>
-                      <TableCell><Checkbox checked={data.delete} onCheckedChange={() => toggleCheckbox(i, 'delete')} id={"cb_d_menu_" + i} /></TableCell>
+          <div className="grid gap-2 mb-4">
+            <TableTopToolbar
+              inputSearch={inputSearch}
+              thColomn={tblThColomns}
+              tblSortList={tblSortList}
+              setTblSortList={setTblSortList}
+              setInputSearch={setInputSearch}
+              fatchData={() => fatchDatas(pageTable)}
+            />
+            <ScrollArea className="max-h-[300px]">
+              <div className="overflow-hidden rounded-lg border">
+                <Table>
+                  <TableHeader className="bg-muted sticky top-0 z-10">
+                    <TableRow>
+                      <TableHead><Checkbox id="cb_all_menu" /></TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Read</TableHead>
+                      <TableHead>Create</TableHead>
+                      <TableHead>Update</TableHead>
+                      <TableHead>Delete</TableHead>
                     </TableRow>
-                  )) : <TableRow>
-                    <TableCell className="text-center" colSpan={tblThColomns.length + 1}><i>No data found!</i></TableCell>
-                  </TableRow>
-                }
-              </TableBody>
-            </Table>
-          </div>
-        </ScrollArea>
-        <TablePagination
-          perPage={perPage}
-          pageTable={pageTable}
-          totalPage={totalPage}
-          totalCount={totalCount}
-          setPerPage={setPerPage}
-          setPageTable={setPageTable}
-          fatchData={fatchDatas}
+                  </TableHeader>
+                  <TableBody>
+                    {
+                      datas != null && datas?.length > 0 ? datas.map((data, i) => (
+                        <TableRow key={data.menu_id}>
+                          <TableCell><Checkbox checked={data.is_selected} onCheckedChange={(val) => toggleCheckbox(i, 'is_selected', val as boolean)} id={"cb_menu_" + i} /></TableCell>
+                          <TableCell>{data.menu_name}</TableCell>
+                          <TableCell><Checkbox disabled checked={data.read} onCheckedChange={(val) => toggleCheckbox(i, 'read', val as boolean)} id={"cb_r_menu_" + i} /></TableCell>
+                          <TableCell><Checkbox disabled={!data.is_selected} checked={data.create} onCheckedChange={(val) => toggleCheckbox(i, 'create', val as boolean)} id={"cb_c_menu_" + i} /></TableCell>
+                          <TableCell><Checkbox disabled={!data.is_selected} checked={data.update} onCheckedChange={(val) => toggleCheckbox(i, 'update', val as boolean)} id={"cb_u_menu_" + i} /></TableCell>
+                          <TableCell><Checkbox disabled={!data.is_selected} checked={data.delete} onCheckedChange={(val) => toggleCheckbox(i, 'delete', val as boolean)} id={"cb_d_menu_" + i} /></TableCell>
+                        </TableRow>
+                      )) : <TableRow>
+                        <TableCell className="text-center" colSpan={tblThColomns.length + 1}><i>No data found!</i></TableCell>
+                      </TableRow>
+                    }
+                  </TableBody>
+                </Table>
+              </div>
+            </ScrollArea>
+            <TablePagination
+              perPage={perPage}
+              pageTable={pageTable}
+              totalPage={totalPage}
+              totalCount={totalCount}
+              setPerPage={setPerPage}
+              setPageTable={setPageTable}
+              fatchData={fatchDatas}
 
-          inputPage={inputPage}
-          setInputPage={setInputPage}
-        />
-      </div>
-      
-      <div className="flex items-center justify-end gap-2">
-        <Button className="primary" size={'sm'}>Submit</Button>
-        <Button variant={'outline'} size={'sm'}>Cancel</Button>
-      </div>
-    </Modal>
+              inputPage={inputPage}
+              setInputPage={setInputPage}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="submit" className="primary" size={'sm'}>Submit</Button>
+            <DialogClose asChild>
+              <Button variant={'outline'} size={'sm'}>Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

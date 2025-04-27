@@ -38,6 +38,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Logged in users are authenticated, otherwise redirect to login page
       return !!auth
     },
+    jwt({ token, user }) {
+      if (user) {
+        token.business_id = user.business_id
+      }
+      return token
+    },
+    session({ session, token }) {
+      session.user.business_id = token.business_id as number
+      return session
+    },
   },
   session: {
     strategy: "jwt"

@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-import storesSeeder from "./seeds/stores-seeder";
+import storesSeeder from "./seeds/business-seeder";
 import menusSeeder from "./seeds/menus-seeder";
 import rolesSeeder from "./seeds/roles-seeder";
 import rolesmenusSeeder from "./seeds/rolemenus-seeder";

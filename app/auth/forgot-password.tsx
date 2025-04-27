@@ -45,13 +45,11 @@ export default function ForgtoPassword({ setSigninSignup }: { setSigninSignup: R
 
       toast.success("Check your Email!", {
         description: "We've send link reset password to your email.",
-        richColors: true
       });
       push("/");
     } catch (error: any) {
       toast.warning("Failed send Email!", {
         description: error.message,
-        richColors: true
       });
     }
     toast.dismiss(sonnerSignIn);

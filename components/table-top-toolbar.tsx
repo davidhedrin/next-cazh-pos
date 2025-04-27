@@ -87,7 +87,7 @@ export default function TableTopToolbar({
           {
             setTblSortList && <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button type="button" variant="outline" size="sm">
                   <i className='bx bx-sort'></i> Sort
                   {tblSortList && tblSortList.length > 0 && (
                     <Badge
@@ -132,7 +132,7 @@ export default function TableTopToolbar({
                               <SelectItem value="desc">Desc</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button onClick={() => {
+                          <Button type="button" onClick={() => {
                             setTblSortList(prev => removeListStateByIndex(prev ?? [], i))
                           }} variant="outline" size="sm">
                             <i className='bx bx-trash text-lg'></i>
@@ -144,15 +144,15 @@ export default function TableTopToolbar({
                 }
                 <div className="flex items-center justify-between mt-1">
                   <div className="flex w-full items-center gap-2">
-                    <Button onClick={addSort} size="sm" className="rounded h-7">
+                    <Button type="button" onClick={addSort} size="sm" className="rounded h-7">
                       Add
                     </Button>
-                    <Button onClick={() => setTblSortList([])} variant="outline" size="sm" className="rounded h-7">
+                    <Button type="button" onClick={() => setTblSortList([])} variant="outline" size="sm" className="rounded h-7">
                       Reset
                     </Button>
                   </div>
 
-                  <Button onClick={() => fatchData && fatchData()} size="sm" className="rounded primary h-7">
+                  <Button type="button" onClick={() => fatchData && fatchData()} size="sm" className="rounded primary h-7">
                     Apply
                   </Button>
                 </div>
@@ -164,6 +164,7 @@ export default function TableTopToolbar({
             setTblThColomns && <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  type="button"
                   aria-label="Toggle columns"
                   role="combobox"
                   variant="outline"
@@ -210,7 +211,7 @@ export default function TableTopToolbar({
             fatchData && <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => fatchData()}>
+                  <Button type="button" variant="outline" size="sm" onClick={() => fatchData()}>
                     <i className='bx bx-refresh text-lg'></i>
                   </Button>
                 </TooltipTrigger>

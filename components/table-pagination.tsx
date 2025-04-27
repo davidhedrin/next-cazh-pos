@@ -99,6 +99,7 @@ export default function TablePagination({
 
         <div className="flex items-center gap-2 ml-0">
           <Button
+            type="button"
             variant="outline"
             className="hidden h-8 w-8 p-0 lg:flex"
             disabled={pageTable <= 1}
@@ -110,6 +111,7 @@ export default function TablePagination({
             <IconChevronsLeft />
           </Button>
           <Button
+            type="button"
             variant="outline"
             className="size-8"
             size="icon"
@@ -122,6 +124,7 @@ export default function TablePagination({
             <IconChevronLeft />
           </Button>
           <Button
+            type="button"
             variant="outline"
             className="size-8"
             size="icon"
@@ -134,6 +137,7 @@ export default function TablePagination({
             <IconChevronRight />
           </Button>
           <Button
+            type="button"
             variant="outline"
             className="hidden size-8 lg:flex"
             size="icon"

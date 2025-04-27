@@ -81,13 +81,11 @@ export default function AuthSignup({ setSigninSignup }: { setSigninSignup: React
 
       toast.success("Account created successfully!", {
         description: "Welcome aboard!. Let's get started!",
-        richColors: true
       });
       push("/apps/dashboard");
     } catch (error: any) {
       toast.warning("Registration Failed!", {
         description: error.message,
-        richColors: true
       });
     }
     toast.dismiss(sonnerSignUp);

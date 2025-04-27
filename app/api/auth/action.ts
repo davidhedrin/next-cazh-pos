@@ -38,7 +38,7 @@ export async function signUpAction(formData: FormData) {
     const password = formData.get("password") as string;
     const hashPass = await hashPassword(password, 15);
   
-    db.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       const createUser = await tx.user.create({
         data: {
           email,
@@ -83,25 +83,25 @@ export async function resetPassword(formData: FormData) {
     if(!findToken) throw new Error("We couldn't verify. The token may be incorrect or no longer valid.");
 
     const hashPass = await hashPassword(password, 15);
-    const updatePass = db.user.update({
-      where: {
-        id: findToken.userId
-      },
-      data: {
-        password: hashPass
-      }
+    await db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: {
+          id: findToken.userId
+        },
+        data: {
+          password: hashPass
+        }
+      });
+  
+      await tx.passwordResetToken.update({
+        where: {
+          id: findToken.id
+        },
+        data: {
+          reestAt: new Date()
+        }
+      });
     });
-
-    const updateToken = db.passwordResetToken.update({
-      where: {
-        id: findToken.id
-      },
-      data: {
-        reestAt: new Date()
-      }
-    });
-
-    await db.$transaction([updatePass, updateToken]);
   } catch (error: any) {
     throw new Error(error.message);
   }

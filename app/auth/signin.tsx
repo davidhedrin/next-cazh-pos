@@ -62,13 +62,11 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
       
       toast.success("Login successfully!", {
         description: `Welcome back ${email}`,
-        richColors: true
       });
       push("/apps/dashboard");
     } catch (error: any) {
       toast.warning("Invalid credentials!", {
         description: error.message,
-        richColors: true
       });
     }
     toast.dismiss(sonnerSignIn);

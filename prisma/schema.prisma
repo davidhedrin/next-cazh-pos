@@ -13,15 +13,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model StoresInfo {
-  id        Int     @id @default(autoincrement())
-  slug      String  @unique
+model BusinessInfo {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
   name      String?
   desc      String?
-  address   String?
-  no_tlp    String?
-  email     String?
-  is_active Boolean @default(true)
+  keyword   String[]
+  is_active Boolean  @default(true)
   users     User[]
   roles     Roles[]
 
@@ -49,15 +47,15 @@ model Menus {
 }
 
 model Roles {
-  id         Int         @id @default(autoincrement())
-  slug       String      @unique
-  slug_name  String
-  name       String?
-  store_id   Int?
-  is_active  Boolean     @default(true)
-  role_menus RoleMenus[]
-  users      User[]
-  store      StoresInfo? @relation(fields: [store_id], references: [id], onDelete: Cascade)
+  id          Int           @id @default(autoincrement())
+  slug        String        @unique
+  slug_name   String
+  name        String?
+  business_id Int?
+  is_active   Boolean       @default(true)
+  role_menus  RoleMenus[]
+  users       User[]
+  business    BusinessInfo? @relation(fields: [business_id], references: [id], onDelete: Cascade)
 
   createdBy String?
   updatedBy String?
@@ -83,8 +81,8 @@ model RoleMenus {
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
 
-  role Roles @relation(fields: [role_id], references: [id], onDelete: Cascade)
-  menu Menus @relation(fields: [menu_id], references: [id], onDelete: Cascade)
+  role Roles? @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  menu Menus? @relation(fields: [menu_id], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -92,14 +90,15 @@ model User {
   email          String               @unique
   password       String
   email_verified DateTime?
-  store_id       Int?
+  business_id    Int?
   role_id        Int?
   is_active      Boolean?             @default(true)
   accounts       Account?
   ver_token      VerificationToken?
   role           Roles?               @relation(fields: [role_id], references: [id], onDelete: SetNull)
-  store          StoresInfo?          @relation(fields: [store_id], references: [id], onDelete: Cascade)
+  business       BusinessInfo?        @relation(fields: [business_id], references: [id], onDelete: Cascade)
   reset_tokens   PasswordResetToken[]
+  stores         StoresInfo[]
 
   createdBy String?
   updatedBy String?
@@ -146,4 +145,24 @@ model PasswordResetToken {
   reestAt  DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StoresInfo {
+  id        Int     @id @default(autoincrement())
+  slug      String  @unique
+  name      String?
+  desc      String?
+  address   String?
+  no_tlp    String?
+  email     String?
+  is_active Boolean @default(true)
+  user_id   Int?
+  user      User?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
 }

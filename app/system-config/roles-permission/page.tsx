@@ -17,7 +17,7 @@ import BreadcrumbListing from "@/components/breadcrumb-list";
 
 import { Badge } from "@/components/ui/badge"
 import { formatDate, SonnerPromise } from "@/lib/utils";
-import { GetDataRoles } from "@/app/api/system-config/action";
+import { GetDataRoles, StoreDataRoles } from "@/app/api/system-config/action";
 import { Menus, Roles } from "@prisma/client";
 import { toast } from "sonner";
 
@@ -83,7 +83,6 @@ export default function RolesPermission() {
     } catch (error: any) {
       toast.warning("Something's gone wrong!", {
         description: "We can't proccess your request, Please try again.",
-        richColors: true
       });
     }
     setLoading(false);
@@ -182,23 +181,16 @@ export default function RolesPermission() {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { z } from 'zod';
 import { ZodErrors } from '@/components/zod-errors';
+import { DtoModuleAccess } from '@/lib/dto-type';
 function ModalAddEdit() {
-  type dtoModuleAccess = {
-    menu_id?: number,
-    menu_name?: string | null,
-    create?: boolean,
-    read?: boolean,
-    update?: boolean,
-    delete?: boolean,
-    is_selected?: boolean
-  };
+  const [openModal, setOpenModal] = useState(false);
 
   const [inputPage, setInputPage] = useState("1");
   const [pageTable, setPageTable] = useState(1);
   const [perPage, setPerPage] = useState(5);
   const [totalPage, setTotalPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  const [datas, setDatas] = useState<dtoModuleAccess[]>([]);
+  const [datas, setDatas] = useState<DtoModuleAccess[]>([]);
   const [inputSearch, setInputSearch] = useState("");
   const [tblSortList, setTblSortList] = useState<TableShortList[]>([]);
   const [tblThColomns, setTblThColomns] = useState<TableThModel[]>([
@@ -246,7 +238,6 @@ function ModalAddEdit() {
     } catch (error: any) {
       toast.warning("Something's gone wrong!", {
         description: "We can't proccess your request, Please try again.",
-        richColors: true
       });
     }
   };
@@ -271,12 +262,13 @@ function ModalAddEdit() {
   const clickOpenModal = () => {
     setIsFirstRender(false);
     fatchDatas();
+    setOpenModal(true);
   };
 
-  const toggleCheckbox = (index: number, field: keyof dtoModuleAccess, value: boolean) => {
+  const toggleCheckbox = (index: number, field: keyof DtoModuleAccess, value: boolean) => {
     if (datas === null) return;
     const updated = [...datas];
-    var dataUpdate: dtoModuleAccess = {
+    var dataUpdate: DtoModuleAccess = {
       ...updated[index],
       [field]: value,
     };
@@ -306,7 +298,7 @@ function ModalAddEdit() {
     updated[index] = dataUpdate;
     setDatas(updated);
   };
-  const [dataStore, setDataStore] = useState<dtoModuleAccess[]>([]);
+  const [dataStore, setDataStore] = useState<DtoModuleAccess[]>([]);
 
   const [stateForm, setStateForm] = useState<FormState>({ success: false, errors: {} });
   const FormSchema = z.object({
@@ -315,7 +307,7 @@ function ModalAddEdit() {
     name: z.string().min(1, { message: 'Name is required field.' }).trim(),
   });
 
-  const handleFormSubmit = (formData: FormData) => {
+  const handleFormSubmit = async (formData: FormData) => {
     const data = Object.fromEntries(formData);
     const valResult = FormSchema.safeParse(data);
     if (!valResult.success) {
@@ -329,24 +321,30 @@ function ModalAddEdit() {
     setStateForm({ success: true, errors: {} });
     const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
     try {
-
+      formData.append("list_module", JSON.stringify(dataStore));
+      await StoreDataRoles(formData);
+      toast.success("Submit successfully!", {
+        description: "Your submission has been successfully completed!",
+      });
+      
+      setOpenModal(false);
+      setDataStore([]);
     } catch (error: any) {
       toast.warning("Request Failed!", {
         description: error.message,
-        richColors: true
       });
     }
     toast.dismiss(sonnerSubmit);
   }
 
   return (
-    <Dialog>
+    <Dialog open={openModal}>
       <DialogTrigger asChild>
         <Button onClick={clickOpenModal} variant="outline" size="sm">
           <i className='bx bx-plus-circle text-lg'></i> New
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-4 text-sm sm:max-w-2xl">
+      <DialogContent setOpenModal={setOpenModal} className="p-4 text-sm sm:max-w-2xl">
         <DialogHeader className="justify-center gap-y-0">
           <DialogTitle className="text-base">Add Role - Permission</DialogTitle>
           <DialogDescription>Here to add new access role & permission</DialogDescription>
@@ -447,9 +445,7 @@ function ModalAddEdit() {
 
           <DialogFooter>
             <Button type="submit" className="primary" size={'sm'}>Submit</Button>
-            <DialogClose asChild>
-              <Button variant={'outline'} size={'sm'}>Cancel</Button>
-            </DialogClose>
+            <Button type="button" onClick={() => setOpenModal(false)} variant={'outline'} size={'sm'}>Cancel</Button>
           </DialogFooter>
         </form>
       </DialogContent>

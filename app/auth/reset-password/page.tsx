@@ -70,7 +70,6 @@ export default function ResetPassword({ searchParams }: { searchParams: Promise<
     if (token === undefined || token.toString().trim() === "") {
       toast.warning("Invalid Token!", {
         description: "Looks like your token is missing. Click and try again!",
-        richColors: true
       });
       return;
     }
@@ -83,13 +82,11 @@ export default function ResetPassword({ searchParams }: { searchParams: Promise<
 
       toast.success("Password Changed!", {
         description: "Your password has been change successfully.",
-        richColors: true
       });
       push("/auth");
     } catch (error: any) {
       toast.warning("Request Failed!", {
         description: error.message,
-        richColors: true
       });
     }
     toast.dismiss(sonnerSignIn);

@@ -7,7 +7,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
       email: "davidhedrin123@gmail.com",
       password: "$2a$15$ygGbPlcO3BQsl1M29T5RUuTUKDrvY7zp4ny9X0Hc9js3qVZfMjF7K",
       email_verified: new Date(),
-      store_id: 1,
+      business_id: 1,
       role_id: 1,
       createdBy: "SEEDER"
     },

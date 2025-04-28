@@ -50,12 +50,14 @@ export async function StoreDataRoles(formData: FormData) {
     const listModuleObj = JSON.parse(listModule) as DtoModuleAccess[];
 
     await db.$transaction(async (tx) => {
+      const createSlug = user?.business_id?.toString() ?? "" + formData.get("slug") as string
       const roles = await tx.roles.create({
         data: {
-          slug: formData.get("slug") as string,
+          slug: createSlug,
           slug_name: formData.get("slug") as string,
           name: formData.get("name") as string,
-          business_id: user?.business_id
+          business_id: user?.business_id,
+          createdBy: user?.email
         }
       });
 
@@ -67,11 +69,44 @@ export async function StoreDataRoles(formData: FormData) {
           read: x.read ?? null,
           update: x.update ?? null,
           delete: x.delete ?? null,
+          createdBy: user?.email
         }
       });
 
       await tx.roleMenus.createMany({
         data: listRoleMenus
+      });
+    });
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
+
+export async function DeleteDataRole(id: number) {
+  try {
+    const session = await auth();
+    if(!session) throw new Error("Authentication credential not Found!");
+    const { user } = session;
+    
+    await db.$transaction(async (tx) => {
+      await tx.roleMenus.updateMany({
+        where: {
+          role_id: id
+        },
+        data: {
+          deletedAt: new Date(),
+          deletedBy: user?.email
+        }
+      });
+
+      await tx.roles.update({
+        where: {
+          id
+        },
+        data: {
+          deletedAt: new Date(),
+          deletedBy: user?.email
+        }
       });
     });
   } catch (error: any) {

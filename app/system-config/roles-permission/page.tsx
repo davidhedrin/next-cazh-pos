@@ -14,22 +14,22 @@ import TableTopToolbar from "@/components/table-top-toolbar";
 import TablePagination from "@/components/table-pagination";
 import { TableThModel, TableShortList, FormState } from "@/lib/models-type";
 import BreadcrumbListing from "@/components/breadcrumb-list";
+import { AlertConfirm } from "@/components/alert-confirm";
 
 import { Badge } from "@/components/ui/badge"
 import { formatDate, SonnerPromise } from "@/lib/utils";
-import { GetDataRoles, StoreDataRoles } from "@/app/api/system-config/action";
-import { Menus, Roles } from "@prisma/client";
+import { GetDataRoles, StoreDataRoles, DeleteDataRole } from "@/app/api/system-config/action";
+import { Roles } from "@prisma/client";
 import { toast } from "sonner";
 
-import Modal from "@/components/modal-dialog";
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GetDataMenus } from '@/app/api/action';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { DialogClose, DialogFooter } from '@/components/ui/dialog';
+import { DialogFooter } from '@/components/ui/dialog';
 
 export default function RolesPermission() {
   const { setLoading } = useLoading();
@@ -54,7 +54,7 @@ export default function RolesPermission() {
     { key: "createdAt", name: "Created At", IsVisible: true },
   ]);
   const fatchDatas = async (page: number = pageTable, countPage: number = perPage) => {
-    setLoading(true);
+    // setLoading(true);
     const selectObj = Object.fromEntries(tblThColomns.filter(col => col.IsVisible).map(col => [col.key, true]));
     const orderObj = tblSortList.filter(col => col.sort && col.sort.trim() !== "").map(col => ({ [col.key as string]: col.sort }));
 
@@ -85,7 +85,7 @@ export default function RolesPermission() {
         description: "We can't proccess your request, Please try again.",
       });
     }
-    setLoading(false);
+    // setLoading(false);
   };
 
   useEffect(() => {
@@ -110,6 +110,23 @@ export default function RolesPermission() {
     fatchDatas();
   }, []);
 
+  const deleteRow = async (id: number) => {
+    console.log(id);
+    const sonnerSubmit = SonnerPromise("Deleting proccess...", "Please wait, deletion data is in progress!");
+    try {
+      await DeleteDataRole(id);
+      await fatchDatas();
+      toast.success("Deletion Complete!", {
+        description: "The selected data has been removed successfully!",
+      });
+    } catch (error: any) {
+      toast.warning("Something's gone wrong!", {
+        description: "We can't proccess your request, Please try again.",
+      });
+    }
+    toast.dismiss(sonnerSubmit);
+  }
+
   return (
     <>
       <BreadcrumbListing listBc={listBreadcrumb} />
@@ -124,7 +141,7 @@ export default function RolesPermission() {
         setInputSearch={setInputSearch}
         fatchData={() => fatchDatas(pageTable)}
 
-        DialogAdd={ModalAddEdit}
+        DialogAdd={() => ModalAddEdit(fatchDatas)}
       />
       <div className="overflow-hidden rounded-lg border">
         <Table>
@@ -151,7 +168,16 @@ export default function RolesPermission() {
                   {data.createdAt && <TableCell>{data.createdAt && formatDate(data.createdAt, "medium")}</TableCell>}
                   <TableCell className="text-right space-x-1">
                     <i className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
-                    <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
+                    <AlertConfirm 
+                      id={data.id.toString()}
+                      deleteRow={() => deleteRow(data.id)}
+
+                      className="w-[300px] min-w-[300px]"
+                      title="Delete Confirmation!"
+                      description="Are your sure want to delete this record? You will not abel to undo this action!"
+                      icon={<i className='bx bx-trash bx-tada text-5xl text-muted-foreground'></i>}
+                      btnOpen={<i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>}
+                    />
                   </TableCell>
                 </TableRow>
               )) : <TableRow>
@@ -182,7 +208,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { z } from 'zod';
 import { ZodErrors } from '@/components/zod-errors';
 import { DtoModuleAccess } from '@/lib/dto-type';
-function ModalAddEdit() {
+function ModalAddEdit(fatchMainData?: (page?: number, countPage?: number) => Promise<void>) {
   const [openModal, setOpenModal] = useState(false);
 
   const [inputPage, setInputPage] = useState("1");
@@ -323,6 +349,7 @@ function ModalAddEdit() {
     try {
       formData.append("list_module", JSON.stringify(dataStore));
       await StoreDataRoles(formData);
+      fatchMainData && await fatchMainData();
       toast.success("Submit successfully!", {
         description: "Your submission has been successfully completed!",
       });

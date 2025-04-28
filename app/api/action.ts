@@ -15,6 +15,7 @@ export async function GetDataMenus(params: GetDataMenusParams): Promise<Paginate
   const { curPage = 1, perPage = 10, where = {}, orderBy = {}, select } = params;
   const skip = (curPage - 1) * perPage;
 
+  where.is_active === true;
   const [data, total] = await Promise.all([
     db.menus.findMany({
       skip,

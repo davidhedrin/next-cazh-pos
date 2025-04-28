@@ -38,7 +38,7 @@ export async function GetDataRoles(params: GetDataRolesParams): Promise<Paginate
       totalPages: Math.ceil(total/perPage)
     }
   };
-}
+};
 
 export async function StoreDataRoles(formData: FormData) {
   try {
@@ -80,7 +80,7 @@ export async function StoreDataRoles(formData: FormData) {
   } catch (error: any) {
     throw new Error(error.message);
   }
-}
+};
 
 export async function DeleteDataRole(id: number) {
   try {
@@ -112,4 +112,17 @@ export async function DeleteDataRole(id: number) {
   } catch (error: any) {
     throw new Error(error.message);
   }
+};
+
+export async function GetDataRoleById(id: number): Promise<Roles | null> {
+  const getData = await db.roles.findUnique({
+    where: {
+      id
+    },
+    include: {
+      role_menus: true
+    }
+  });
+  
+  return getData;
 }

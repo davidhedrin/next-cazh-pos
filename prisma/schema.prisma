@@ -53,7 +53,7 @@ model Roles {
   name        String?
   business_id Int?
   is_active   Boolean       @default(true)
-  role_menus  RoleMenus[]
+  role_menus  RoleMenus[]   @relation("RoleMenuToRole")
   users       User[]
   business    BusinessInfo? @relation(fields: [business_id], references: [id], onDelete: Cascade)
 
@@ -81,7 +81,7 @@ model RoleMenus {
   updatedAt DateTime? @updatedAt
   deletedAt DateTime?
 
-  role Roles? @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  role Roles? @relation("RoleMenuToRole", fields: [role_id], references: [id], onDelete: Cascade)
   menu Menus? @relation(fields: [menu_id], references: [id], onDelete: Cascade)
 }
 

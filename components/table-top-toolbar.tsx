@@ -26,7 +26,7 @@ type TableTopToolbarProps = {
   setInputSearch?: Dispatch<SetStateAction<string>>;
   fatchData?: (page?: number) => Promise<void>;
 
-  DialogAdd?(): JSX.Element;
+  openModal?: (id?: number) => Promise<void>;
 };
 
 export default function TableTopToolbar({
@@ -39,7 +39,7 @@ export default function TableTopToolbar({
   setInputSearch,
   fatchData,
 
-  DialogAdd
+  openModal
 }: TableTopToolbarProps) {
   const addSort = () => {
     const newRow: TableShortList = { key: "", sort: "" };
@@ -79,7 +79,9 @@ export default function TableTopToolbar({
             </Command>
           }
           {
-            DialogAdd && <DialogAdd />
+            openModal && <Button type="button" onClick={() => openModal()} variant="outline" size="sm">
+              <i className='bx bx-plus-circle text-lg'></i> New
+            </Button>
           }
         </div>
 

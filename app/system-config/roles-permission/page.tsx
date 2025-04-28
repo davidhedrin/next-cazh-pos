@@ -111,7 +111,6 @@ export default function RolesPermission() {
   }, []);
 
   const deleteRow = async (id: number) => {
-    console.log(id);
     const sonnerSubmit = SonnerPromise("Deleting proccess...", "Please wait, deletion data is in progress!");
     try {
       await DeleteDataRole(id);

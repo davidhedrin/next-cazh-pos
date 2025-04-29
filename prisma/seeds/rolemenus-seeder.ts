@@ -23,6 +23,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
       { role_id: 1, menu_id: 17, create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
       { role_id: 1, menu_id: 18, create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
       { role_id: 1, menu_id: 19, create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
+      { role_id: 1, menu_id: 20, create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
     ]
   });
   console.log('Multiple Role Menus Created!');

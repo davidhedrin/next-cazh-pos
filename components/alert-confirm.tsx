@@ -20,9 +20,7 @@ type AlertConfirmProps = {
   textConfirm?: string;
   btnOpen?: JSX.Element | string;
   icon?: JSX.Element | string;
-
-  id: number | string;
-  deleteRow: (id: number | string) => Promise<void>;
+  confirm?: () => void;
 };
 
 export function AlertConfirm({
@@ -32,10 +30,7 @@ export function AlertConfirm({
   textClose,
   textConfirm,
   icon,
-
-  id,
-  deleteRow,
-
+  confirm,
   className,
   ...props
 }: React.ComponentProps<"div"> & AlertConfirmProps) {
@@ -54,7 +49,7 @@ export function AlertConfirm({
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-row sm:flex-row sm:justify-center justify-center">
           <AlertDialogAction asChild>
-            <Button onClick={() => deleteRow(id)} className="primary" size={"sm"}>{textConfirm ?? "Confirm"}</Button>
+            <Button onClick={() => confirm && confirm()} className="primary" size={"sm"}>{textConfirm ?? "Confirm"}</Button>
           </AlertDialogAction>
           <AlertDialogCancel asChild>
             <Button variant={"outline"} size={"sm"}>{textClose ?? "Cancel"}</Button>

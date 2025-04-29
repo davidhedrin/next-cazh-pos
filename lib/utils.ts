@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import bcrypt from "bcryptjs";
-import { toast } from "sonner";
+import { ExternalToast, toast } from "sonner";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -15,10 +15,10 @@ export async function verifyPassword(password: string, hashed: string): Promise<
   return await bcrypt.compare(password, hashed);
 }
 
-export function SonnerPromise(title: string = "Loading data...", desc: string = "Just a sec, getting everything ready!") {
-  const toastId = toast.loading(title, {
-    description: desc,
-  });
+export function SonnerPromise(title: string = "Loading data...", desc?: string) {
+  const dataToast: ExternalToast = {};
+  if(desc) dataToast.description = desc;
+  const toastId = toast.loading(title, dataToast);
 
   return toastId;
 }

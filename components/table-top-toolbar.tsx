@@ -87,7 +87,7 @@ export default function TableTopToolbar({
 
         <div className="flex items-center gap-2 justify-end">
           {
-            setTblSortList && <Popover>
+            setTblSortList && <Popover modal={true}>
               <PopoverTrigger asChild>
                 <Button type="button" variant="outline" size="sm">
                   <i className='bx bx-sort'></i> Sort

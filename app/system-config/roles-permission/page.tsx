@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import TableTopToolbar from "@/components/table-top-toolbar";
 import TablePagination from "@/components/table-pagination";
 import { TableThModel, TableShortList, FormState } from "@/lib/models-type";
@@ -31,10 +31,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DialogFooter } from '@/components/ui/dialog';
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { z } from 'zod';
 import { ZodErrors } from '@/components/zod-errors';
-import { DtoModuleAccess } from '@/lib/dto-type';
+import { DtoRoles, DtoModuleAccess } from '@/lib/dto-type';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 export default function RolesPermission() {
   const { setLoading } = useLoading();
@@ -147,7 +148,7 @@ export default function RolesPermission() {
     { key: "slug", name: "Code", IsVisible: false },
     { key: "is_active", name: "Status", IsVisible: false },
   ]);
-  const fatchDatasAddEdit = async (page: number = pageTableAddEdit, countPage: number = perPageAddEdit) => {
+  const fatchDatasAddEdit = async (page: number = pageTableAddEdit, countPage: number = perPageAddEdit, menuStroes: DtoModuleAccess[] = dataStoreAddEdit) => {
     const selectObj = Object.fromEntries(tblThColomnsAddEdit.filter(col => col.IsVisible).map(col => [col.key, true]));
     const orderObj = tblSortListAddEdit.filter(col => col.sort && col.sort.trim() !== "").map(col => ({ [col.key as string]: col.sort }));
 
@@ -173,8 +174,9 @@ export default function RolesPermission() {
       setInputPageAddEdit(result.meta.page.toString());
 
       setDatasAddEdit(result.data.map(x => {
-        const findInStore = dataStoreAddEdit.find(y => y.menu_id === x.id);
+        const findInStore = menuStroes.find(y => y.menu_id === x.id);
         return {
+          id: findInStore?.id,
           menu_id: x.id,
           menu_name: x.name,
           read: findInStore?.read ?? false,
@@ -249,9 +251,20 @@ export default function RolesPermission() {
   });
 
   const [dataStoreAddEdit, setDataStoreAddEdit] = useState<DtoModuleAccess[]>([]);
+  const [addEditId, setAddEditId] = useState<number | null>(null);
   const [txtSlug, setTxtSlug] = useState("");
-  const [isActive, setIsActive] = useState<string>();
+  const [isActive, setIsActive] = useState<boolean>();
   const [txtName, setTxtName] = useState("");
+  const createDtoData = (): DtoRoles => {
+    const newData: DtoRoles = {
+      id: addEditId,
+      slug_name: txtSlug,
+      name: txtName,
+      is_active: isActive,
+      role_menus: dataStoreAddEdit
+    };
+    return newData;
+  }
 
   const handleFormSubmitAddEdit = async (formData: FormData) => {
     const data = Object.fromEntries(formData);
@@ -267,8 +280,7 @@ export default function RolesPermission() {
     setStateFormAddEdit({ success: true, errors: {} });
     const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
     try {
-      formData.append("list_module", JSON.stringify(dataStoreAddEdit));
-      await StoreDataRoles(formData);
+      await StoreDataRoles(createDtoData());
       await fatchDatas();
       toast.success("Submit successfully!", {
         description: "Your submission has been successfully completed!",
@@ -286,29 +298,38 @@ export default function RolesPermission() {
 
   const [openModal, setOpenModal] = useState(false);
   const openModalAddEdit = async (id?: number) => {
+    const openSonner = SonnerPromise("Loading open form...");
     if (id) {
       const data = await GetDataRoleById(id);
       if (data) {
-        setTxtSlug(data.slug_name);
-        setIsActive(data.is_active.toString());
-        setTxtName(data.name ?? "");
+        const roleMenus: DtoModuleAccess[] = data.role_menus.map(x => ({
+          id: x.id,
+          menu_id: x.menu_id,
+          menu_name: x.menu?.name,
+          create: x.create ?? false,
+          read: x.read ?? false,
+          update: x.update ?? false,
+          delete: x.delete ?? false,
+          is_selected: true
+        }));
+        setDataStoreAddEdit(roleMenus);
 
-        // setDatasAddEdit(result.data.map(x => {
-        //   const findInStore = dataStoreAddEdit.find(y => y.menu_id === x.id);
-        //   return {
-        //     menu_id: x.id,
-        //     menu_name: x.name,
-        //     read: findInStore?.read ?? false,
-        //     create: findInStore?.create ?? false,
-        //     update: findInStore?.update ?? false,
-        //     delete: findInStore?.delete ?? false,
-        //     is_selected: findInStore?.is_selected ?? false,
-        //   };
-        // }));
+        setAddEditId(id);
+        setTxtSlug(data.slug_name);
+        setIsActive(data.is_active);
+        setTxtName(data.name ?? "");
+        await fatchDatasAddEdit(1, perPageAddEdit, roleMenus);
       }
+    } else {
+      setAddEditId(null);
+      setTxtSlug("");
+      setIsActive(undefined);
+      setTxtName("");
+      await fatchDatasAddEdit(1);
     }
     setOpenModal(true);
-    await fatchDatasAddEdit();
+
+    toast.dismiss(openSonner);
   };
   const closeModalAddEdit = () => {
     setDataStoreAddEdit([]);
@@ -351,15 +372,13 @@ export default function RolesPermission() {
                   <TableCell>{(pageTable - 1) * perPage + i + 1}</TableCell>
                   {data.name && <TableCell>{data.name}</TableCell>}
                   {data.slug_name && <TableCell>{data.slug_name}</TableCell>}
-                  {data.is_active && <TableCell><Badge className={`${data.is_active ? "success" : "secondary"}`}>{data.is_active ? "Active" : "Inactive"}</Badge></TableCell>}
+                  {data.is_active != null && <TableCell><Badge className={`${data.is_active == true ? "success" : "secondary"}`}>{data.is_active == true ? "Active" : "Inactive"}</Badge></TableCell>}
                   {data.createdBy && <TableCell>{data.createdBy}</TableCell>}
                   {data.createdAt && <TableCell>{data.createdAt && formatDate(data.createdAt, "medium")}</TableCell>}
                   <TableCell className="text-right space-x-1">
                     <i onClick={() => openModalAddEdit(data.id)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
                     <AlertConfirm
-                      id={data.id.toString()}
-                      deleteRow={() => deleteRow(data.id)}
-
+                      confirm={() => deleteRow(data.id)}
                       className="w-[300px] min-w-[300px]"
                       title="Delete Confirmation!"
                       description="Are your sure want to delete this record? You will not abel to undo this action!"
@@ -389,7 +408,7 @@ export default function RolesPermission() {
       />
 
       {/* Modal Add & Edit */}
-      <Dialog open={openModal} onOpenChange={setOpenModal}>
+      <Dialog open={openModal} onOpenChange={setOpenModal} modal={true}>
         <DialogContent setOpenModal={() => closeModalAddEdit()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()} className="p-4 text-sm sm:max-w-2xl">
           <DialogHeader className="justify-center gap-y-0">
             <DialogTitle className="text-base">Add Role - Permission</DialogTitle>
@@ -407,11 +426,16 @@ export default function RolesPermission() {
               <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
                 <Label className="gap-0" htmlFor="is_active">Status<span className="text-red-500">*</span></Label>
                 <div>
-                  <Select value={isActive} onValueChange={(val) => setIsActive(val)} name="is_active">
-                    <SelectTrigger className="w-full">
+                  <Select value={isActive != null ? isActive.toString() : ""} onValueChange={(val) => {
+                    const cvtVal = val === "true" ? true : false;
+                    console.log(cvtVal);
+
+                    setIsActive(cvtVal);
+                  }} name="is_active">
+                    <SelectTrigger id="is_active" className="w-full">
                       <SelectValue placeholder="Select status role" />
                     </SelectTrigger>
-                    <SelectContent id="is_active">
+                    <SelectContent>
                       <SelectGroup>
                         <SelectItem value="true">Active</SelectItem>
                         <SelectItem value="false">Inactive</SelectItem>
@@ -490,7 +514,34 @@ export default function RolesPermission() {
             </div>
 
             <DialogFooter>
-              <Button type="submit" className="primary" size={'sm'}>Submit</Button>
+              <AlertConfirm
+                // confirm={() => deleteRow(data.id)}
+                className="w-[300px] min-w-[300px]"
+                title="Delete Confirmation!"
+                description="Are your sure want to delete this record? You will not abel to undo this action!"
+                icon={<i className='bx bx-trash bx-tada text-5xl text-muted-foreground'></i>}
+                btnOpen={<Button type="button" className="primary" size={'sm'}>Submit</Button>}
+              />
+              {/* <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" className="primary" size={'sm'}>Submit</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your
+                      account and remove your data from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogAction asChild>
+                      <Button type="submit" className="primary" size={'sm'}>Submit</Button>
+                    </AlertDialogAction>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog> */}
               <Button type="button" onClick={() => closeModalAddEdit()} variant={'outline'} size={'sm'}>Cancel</Button>
             </DialogFooter>
           </form>

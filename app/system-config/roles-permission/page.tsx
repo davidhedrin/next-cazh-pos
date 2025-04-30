@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TableTopToolbar from "@/components/table-top-toolbar";
 import TablePagination from "@/components/table-pagination";
 import { TableThModel, TableShortList, FormState } from "@/lib/models-type";
@@ -250,17 +250,18 @@ export default function RolesPermission() {
     name: z.string().min(1, { message: 'Name is required field.' }).trim(),
   });
 
+  const formRefAddEdit = useRef<HTMLFormElement>(null);
   const [dataStoreAddEdit, setDataStoreAddEdit] = useState<DtoModuleAccess[]>([]);
   const [addEditId, setAddEditId] = useState<number | null>(null);
   const [txtSlug, setTxtSlug] = useState("");
-  const [isActive, setIsActive] = useState<boolean>();
+  const [isActive, setIsActive] = useState<string>();
   const [txtName, setTxtName] = useState("");
   const createDtoData = (): DtoRoles => {
     const newData: DtoRoles = {
       id: addEditId,
       slug_name: txtSlug,
       name: txtName,
-      is_active: isActive,
+      is_active: isActive === "true" ? true : false,
       role_menus: dataStoreAddEdit
     };
     return newData;
@@ -316,7 +317,7 @@ export default function RolesPermission() {
 
         setAddEditId(id);
         setTxtSlug(data.slug_name);
-        setIsActive(data.is_active);
+        setIsActive(data.is_active.toString());
         setTxtName(data.name ?? "");
         await fatchDatasAddEdit(1, perPageAddEdit, roleMenus);
       }
@@ -332,6 +333,7 @@ export default function RolesPermission() {
     toast.dismiss(openSonner);
   };
   const closeModalAddEdit = () => {
+    setStateFormAddEdit({ success: true, errors: {} });
     setDataStoreAddEdit([]);
     setOpenModal(false);
   }
@@ -414,7 +416,7 @@ export default function RolesPermission() {
             <DialogTitle className="text-base">Add Role - Permission</DialogTitle>
             <DialogDescription>Here to add new access role & permission</DialogDescription>
           </DialogHeader>
-          <form action={(formData) => handleFormSubmitAddEdit(formData)}>
+          <form ref={formRefAddEdit} action={(formData) => handleFormSubmitAddEdit(formData)}>
             <div className='grid grid-cols-12 gap-3 mb-3'>
               <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
                 <Label className="gap-0" htmlFor="slug">Code<span className="text-red-500">*</span></Label>
@@ -426,12 +428,7 @@ export default function RolesPermission() {
               <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
                 <Label className="gap-0" htmlFor="is_active">Status<span className="text-red-500">*</span></Label>
                 <div>
-                  <Select value={isActive != null ? isActive.toString() : ""} onValueChange={(val) => {
-                    const cvtVal = val === "true" ? true : false;
-                    console.log(cvtVal);
-
-                    setIsActive(cvtVal);
-                  }} name="is_active">
+                  <Select value={isActive} onValueChange={(val) => setIsActive(val)} name="is_active">
                     <SelectTrigger id="is_active" className="w-full">
                       <SelectValue placeholder="Select status role" />
                     </SelectTrigger>
@@ -514,34 +511,17 @@ export default function RolesPermission() {
             </div>
 
             <DialogFooter>
-              <AlertConfirm
-                // confirm={() => deleteRow(data.id)}
+              {/* <AlertConfirm
+                confirm={() => {
+                  if(formRefAddEdit.current) formRefAddEdit.current.requestSubmit();
+                }}
                 className="w-[300px] min-w-[300px]"
-                title="Delete Confirmation!"
-                description="Are your sure want to delete this record? You will not abel to undo this action!"
+                title="Submit Confirmation!"
+                description="Are your sure want continue this process? Please cross check your entry data!"
                 icon={<i className='bx bx-trash bx-tada text-5xl text-muted-foreground'></i>}
                 btnOpen={<Button type="button" className="primary" size={'sm'}>Submit</Button>}
-              />
-              {/* <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" className="primary" size={'sm'}>Submit</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete your
-                      account and remove your data from our servers.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogAction asChild>
-                      <Button type="submit" className="primary" size={'sm'}>Submit</Button>
-                    </AlertDialogAction>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog> */}
+              /> */}
+              <Button type="submit" className="primary" size={'sm'}>Submit</Button>
               <Button type="button" onClick={() => closeModalAddEdit()} variant={'outline'} size={'sm'}>Cancel</Button>
             </DialogFooter>
           </form>

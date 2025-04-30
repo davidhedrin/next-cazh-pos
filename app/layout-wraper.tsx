@@ -16,7 +16,7 @@ export default function LayoutWraper({ children }: Readonly<{ children: React.Re
   const isAuthPage = pathname === '/' || pathname === '/not-found' || pathname.startsWith('/auth');
 
   return (
-    <div>
+    <>
       {
         !isAuthPage ? <SidebarProvider
           style={
@@ -45,6 +45,6 @@ export default function LayoutWraper({ children }: Readonly<{ children: React.Re
             {children}
           </>
       }
-    </div>
+    </>
   )
 }

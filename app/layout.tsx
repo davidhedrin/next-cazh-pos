@@ -6,6 +6,7 @@ import LayoutWraper from "@/app/layout-wraper";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LoadingProvider } from '@/components/loading-context';
+import { AlertDialogProvider } from "@/components/alert-confirm";
 
 import { Toaster } from "@/components/ui/sonner";
 import Loading from "@/components/loading";
@@ -43,7 +44,9 @@ export default function RootLayout({
           <SessionProvider>
             <LoadingProvider>
               <Loading />
-              <LayoutWraper children={children} />
+              <AlertDialogProvider>
+                <LayoutWraper children={children} />
+              </AlertDialogProvider>
             </LoadingProvider>
           </SessionProvider>
         </ThemeProvider>

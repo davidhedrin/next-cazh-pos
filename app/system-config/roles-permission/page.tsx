@@ -9,12 +9,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import TableTopToolbar from "@/components/table-top-toolbar";
 import TablePagination from "@/components/table-pagination";
 import { TableThModel, TableShortList, FormState } from "@/lib/models-type";
 import BreadcrumbListing from "@/components/breadcrumb-list";
-import { AlertConfirm } from "@/components/alert-confirm";
+import { UseAlertDialog } from "@/components/alert-confirm";
 
 import { Badge } from "@/components/ui/badge"
 import { formatDate, SonnerPromise } from "@/lib/utils";
@@ -35,10 +35,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { z } from 'zod';
 import { ZodErrors } from '@/components/zod-errors';
 import { DtoRoles, DtoModuleAccess } from '@/lib/dto-type';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 export default function RolesPermission() {
   const { setLoading } = useLoading();
+  const { openAlert } = UseAlertDialog();
+
   const listBreadcrumb = [
     { name: "System Config" },
     { name: "Roles & Permissions", url: "/system-config/roles-permission" }
@@ -107,7 +108,7 @@ export default function RolesPermission() {
     if (isFirstRender) return;
     const timer = setTimeout(() => {
       fatchDatas(1);
-    }, 300);
+    }, 400);
     return () => clearTimeout(timer);
   }, [inputSearch]);
 
@@ -119,6 +120,15 @@ export default function RolesPermission() {
   // End Master
 
   const deleteRow = async (id: number) => {
+    const confirmed = await openAlert({
+      title: 'Delete Confirmation!',
+      description: 'Are your sure want to delete this record? You will not abel to undo this action!',
+      textConfirm: 'Yes, Delete',
+      textClose: 'No, Keep It',
+      icon: 'bx bx-trash bx-tada'
+    });
+    if(!confirmed) return;
+
     const sonnerSubmit = SonnerPromise("Deleting proccess...", "Please wait, deletion data is in progress!");
     try {
       await DeleteDataRole(id);
@@ -205,7 +215,7 @@ export default function RolesPermission() {
     if (isFirstRender) return;
     const timer = setTimeout(() => {
       fatchDatasAddEdit(1);
-    }, 300);
+    }, 400);
     return () => clearTimeout(timer);
   }, [inputSearchAddEdit]);
 
@@ -250,7 +260,6 @@ export default function RolesPermission() {
     name: z.string().min(1, { message: 'Name is required field.' }).trim(),
   });
 
-  const formRefAddEdit = useRef<HTMLFormElement>(null);
   const [dataStoreAddEdit, setDataStoreAddEdit] = useState<DtoModuleAccess[]>([]);
   const [addEditId, setAddEditId] = useState<number | null>(null);
   const [txtSlug, setTxtSlug] = useState("");
@@ -277,24 +286,40 @@ export default function RolesPermission() {
       });
       return;
     };
-
     setStateFormAddEdit({ success: true, errors: {} });
-    const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
-    try {
-      await StoreDataRoles(createDtoData());
-      await fatchDatas();
-      toast.success("Submit successfully!", {
-        description: "Your submission has been successfully completed!",
+    
+    setOpenModal(false);
+    setTimeout(async () => {
+      const confirmed = await openAlert({
+        title: 'Submit Confirmation!',
+        description: 'Are you sure you want to submit this form? Please double-check before proceeding!',
+        textConfirm: 'Yes, Submit',
+        textClose: 'No, Go Back',
+        icon: 'bx bx-error bx-tada'
       });
+      if(!confirmed){
+        setOpenModal(true);
+        return;
+      }
+  
+      const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
+      try {
+        await StoreDataRoles(createDtoData());
+        await fatchDatas();
+        toast.success("Submit successfully!", {
+          description: "Your submission has been successfully completed!",
+        });
+  
+        setOpenModal(false);
+        setDataStoreAddEdit([]);
+      } catch (error: any) {
+        toast.warning("Request Failed!", {
+          description: error.message,
+        });
+      }
+      toast.dismiss(sonnerSubmit);
+    }, 100);
 
-      setOpenModal(false);
-      setDataStoreAddEdit([]);
-    } catch (error: any) {
-      toast.warning("Request Failed!", {
-        description: error.message,
-      });
-    }
-    toast.dismiss(sonnerSubmit);
   };
 
   const [openModal, setOpenModal] = useState(false);
@@ -379,14 +404,7 @@ export default function RolesPermission() {
                   {data.createdAt && <TableCell>{data.createdAt && formatDate(data.createdAt, "medium")}</TableCell>}
                   <TableCell className="text-right space-x-1">
                     <i onClick={() => openModalAddEdit(data.id)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
-                    <AlertConfirm
-                      confirm={() => deleteRow(data.id)}
-                      className="w-[300px] min-w-[300px]"
-                      title="Delete Confirmation!"
-                      description="Are your sure want to delete this record? You will not abel to undo this action!"
-                      icon={<i className='bx bx-trash bx-tada text-5xl text-muted-foreground'></i>}
-                      btnOpen={<i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>}
-                    />
+                    <i onClick={() => deleteRow(data.id)} className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
                   </TableCell>
                 </TableRow>
               )) : <TableRow>
@@ -410,13 +428,13 @@ export default function RolesPermission() {
       />
 
       {/* Modal Add & Edit */}
-      <Dialog open={openModal} onOpenChange={setOpenModal} modal={true}>
+      <Dialog open={openModal} onOpenChange={setOpenModal}>
         <DialogContent setOpenModal={() => closeModalAddEdit()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()} className="p-4 text-sm sm:max-w-2xl">
           <DialogHeader className="justify-center gap-y-0">
             <DialogTitle className="text-base">Add Role - Permission</DialogTitle>
             <DialogDescription>Here to add new access role & permission</DialogDescription>
           </DialogHeader>
-          <form ref={formRefAddEdit} action={(formData) => handleFormSubmitAddEdit(formData)}>
+          <form action={(formData) => handleFormSubmitAddEdit(formData)}>
             <div className='grid grid-cols-12 gap-3 mb-3'>
               <div className="col-span-12 sm:col-span-6 md:col-span-4 grid gap-2">
                 <Label className="gap-0" htmlFor="slug">Code<span className="text-red-500">*</span></Label>
@@ -511,16 +529,6 @@ export default function RolesPermission() {
             </div>
 
             <DialogFooter>
-              {/* <AlertConfirm
-                confirm={() => {
-                  if(formRefAddEdit.current) formRefAddEdit.current.requestSubmit();
-                }}
-                className="w-[300px] min-w-[300px]"
-                title="Submit Confirmation!"
-                description="Are your sure want continue this process? Please cross check your entry data!"
-                icon={<i className='bx bx-trash bx-tada text-5xl text-muted-foreground'></i>}
-                btnOpen={<Button type="button" className="primary" size={'sm'}>Submit</Button>}
-              /> */}
               <Button type="submit" className="primary" size={'sm'}>Submit</Button>
               <Button type="button" onClick={() => closeModalAddEdit()} variant={'outline'} size={'sm'}>Cancel</Button>
             </DialogFooter>

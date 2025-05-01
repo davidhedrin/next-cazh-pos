@@ -61,7 +61,7 @@ export const AlertDialogProvider = ({ children }: { children: ReactNode }) => {
             <AlertDialogTitle className="text-base text-center">{alertProps.title || 'Confirm Title'}</AlertDialogTitle>
             {alertProps.icon && (
               <div className="text-center py-3">
-                <i className={`${alertProps.icon} bx-tada text-5xl text-muted-foreground`}></i>
+                <i className={`${alertProps.icon} text-5xl`}></i>
               </div>
             )}
             {alertProps.description && <AlertDialogDescription className="text-center">{alertProps.description}</AlertDialogDescription>}

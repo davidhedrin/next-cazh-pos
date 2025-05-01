@@ -4,6 +4,7 @@ import { useLoading } from '@/components/loading-context';
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -28,7 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GetDataMenus } from '@/app/api/action';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { DialogFooter } from '@/components/ui/dialog';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -125,9 +126,9 @@ export default function RolesPermission() {
       description: 'Are your sure want to delete this record? You will not abel to undo this action!',
       textConfirm: 'Yes, Delete',
       textClose: 'No, Keep It',
-      icon: 'bx bx-trash bx-tada'
+      icon: 'bx bx-trash bx-tada text-red-500'
     });
-    if(!confirmed) return;
+    if (!confirmed) return;
 
     const sonnerSubmit = SonnerPromise("Deleting proccess...", "Please wait, deletion data is in progress!");
     try {
@@ -287,7 +288,7 @@ export default function RolesPermission() {
       return;
     };
     setStateFormAddEdit({ success: true, errors: {} });
-    
+
     setOpenModal(false);
     setTimeout(async () => {
       const confirmed = await openAlert({
@@ -295,13 +296,13 @@ export default function RolesPermission() {
         description: 'Are you sure you want to submit this form? Please double-check before proceeding!',
         textConfirm: 'Yes, Submit',
         textClose: 'No, Go Back',
-        icon: 'bx bx-error bx-tada'
+        icon: 'bx bx-error bx-tada text-blue-500'
       });
-      if(!confirmed){
+      if (!confirmed) {
         setOpenModal(true);
         return;
       }
-  
+
       const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
       try {
         await StoreDataRoles(createDtoData());
@@ -309,7 +310,7 @@ export default function RolesPermission() {
         toast.success("Submit successfully!", {
           description: "Your submission has been successfully completed!",
         });
-  
+
         setOpenModal(false);
         setDataStoreAddEdit([]);
       } catch (error: any) {
@@ -429,9 +430,9 @@ export default function RolesPermission() {
 
       {/* Modal Add & Edit */}
       <Dialog open={openModal} onOpenChange={setOpenModal}>
-        <DialogContent setOpenModal={() => closeModalAddEdit()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()} className="p-4 text-sm sm:max-w-2xl">
+        <DialogContent className="p-4 text-sm sm:max-w-2xl" setOpenModal={() => closeModalAddEdit()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader className="justify-center gap-y-0">
-            <DialogTitle className="text-base">Add Role - Permission</DialogTitle>
+            <DialogTitle className="text-base"><i className='bx bx-shield-quarter text-lg'></i> {addEditId ? "Edit" : "Add"} Role - Permission</DialogTitle>
             <DialogDescription>Here to add new access role & permission</DialogDescription>
           </DialogHeader>
           <form action={(formData) => handleFormSubmitAddEdit(formData)}>
@@ -482,38 +483,41 @@ export default function RolesPermission() {
                 setInputSearch={setInputSearchAddEdit}
                 fatchData={() => fatchDatasAddEdit(pageTableAddEdit)}
               />
-              <ScrollArea className="max-h-[300px]">
-                <div className="overflow-hidden rounded-lg border">
-                  <Table>
-                    <TableHeader className="bg-muted sticky top-0 z-10">
-                      <TableRow>
-                        <TableHead><Checkbox id="cb_all_menu" /></TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Read</TableHead>
-                        <TableHead>Create</TableHead>
-                        <TableHead>Update</TableHead>
-                        <TableHead>Delete</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {
-                        datasAddEdit != null && datasAddEdit?.length > 0 ? datasAddEdit.map((data, i) => (
-                          <TableRow key={data.menu_id}>
-                            <TableCell><Checkbox checked={data.is_selected} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'is_selected', val as boolean)} id={"cb_menu_" + i} /></TableCell>
-                            <TableCell>{data.menu_name}</TableCell>
-                            <TableCell><Checkbox disabled checked={data.read} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'read', val as boolean)} id={"cb_r_menu_" + i} /></TableCell>
-                            <TableCell><Checkbox disabled={!data.is_selected} checked={data.create} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'create', val as boolean)} id={"cb_c_menu_" + i} /></TableCell>
-                            <TableCell><Checkbox disabled={!data.is_selected} checked={data.update} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'update', val as boolean)} id={"cb_u_menu_" + i} /></TableCell>
-                            <TableCell><Checkbox disabled={!data.is_selected} checked={data.delete} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'delete', val as boolean)} id={"cb_d_menu_" + i} /></TableCell>
-                          </TableRow>
-                        )) : <TableRow>
-                          <TableCell className="text-center" colSpan={6}><i>No data found!</i></TableCell>
+              <div className="flex">
+                <ScrollArea type="always" className="w-1 flex-1 max-h-[300px]">
+                  <div className="overflow-hidden rounded-lg border">
+                    <Table>
+                      <TableHeader className="bg-muted sticky top-0 z-10">
+                        <TableRow>
+                          <TableHead><Checkbox id="cb_all_menu" /></TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Read</TableHead>
+                          <TableHead>Create</TableHead>
+                          <TableHead>Update</TableHead>
+                          <TableHead>Delete</TableHead>
                         </TableRow>
-                      }
-                    </TableBody>
-                  </Table>
-                </div>
-              </ScrollArea>
+                      </TableHeader>
+                      <TableBody>
+                        {
+                          datasAddEdit != null && datasAddEdit?.length > 0 ? datasAddEdit.map((data, i) => (
+                            <TableRow key={data.menu_id}>
+                              <TableCell><Checkbox checked={data.is_selected} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'is_selected', val as boolean)} id={"cb_menu_" + i} /></TableCell>
+                              <TableCell>{data.menu_name}</TableCell>
+                              <TableCell><Checkbox disabled checked={data.read} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'read', val as boolean)} id={"cb_r_menu_" + i} /></TableCell>
+                              <TableCell><Checkbox disabled={!data.is_selected} checked={data.create} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'create', val as boolean)} id={"cb_c_menu_" + i} /></TableCell>
+                              <TableCell><Checkbox disabled={!data.is_selected} checked={data.update} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'update', val as boolean)} id={"cb_u_menu_" + i} /></TableCell>
+                              <TableCell><Checkbox disabled={!data.is_selected} checked={data.delete} onCheckedChange={(val) => toggleCheckboxAddEdit(i, 'delete', val as boolean)} id={"cb_d_menu_" + i} /></TableCell>
+                            </TableRow>
+                          )) : <TableRow>
+                            <TableCell className="text-center" colSpan={6}><i>No data found!</i></TableCell>
+                          </TableRow>
+                        }
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <ScrollBar orientation="horizontal" className="w-full" />
+                </ScrollArea>
+              </div>
               <TablePagination
                 perPage={perPageAddEdit}
                 pageTable={pageTableAddEdit}

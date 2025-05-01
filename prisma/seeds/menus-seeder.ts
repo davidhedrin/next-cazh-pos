@@ -22,7 +22,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
       { slug: "rna-fin", name: "Financial", createdBy: "SEEDER" }, // ID: 14
       { slug: "rna-ptr", name: "Product Traffic", createdBy: "SEEDER" }, // ID: 15
 
-      { slug: "usm-usl", name: "User List", createdBy: "SEEDER" }, // ID: 16
+      { slug: "usm-usl", name: "User Management", createdBy: "SEEDER" }, // ID: 16
       { slug: "usm-rnp", name: "Roles & Permissions", createdBy: "SEEDER" }, // ID: 17
       
       { slug: "set-sri", name: "Store Information", createdBy: "SEEDER" }, // ID: 18

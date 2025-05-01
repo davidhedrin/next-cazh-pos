@@ -4,7 +4,6 @@ import { useLoading } from '@/components/loading-context';
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -63,7 +62,6 @@ export default function RolesPermission() {
     { key: "createdAt", name: "Created At", IsVisible: true },
   ]);
   const fatchDatas = async (page: number = pageTable, countPage: number = perPage) => {
-    // setLoading(true);
     const selectObj = Object.fromEntries(tblThColomns.filter(col => col.IsVisible).map(col => [col.key, true]));
     const orderObj = tblSortList.filter(col => col.sort && col.sort.trim() !== "").map(col => ({ [col.key as string]: col.sort }));
 
@@ -94,7 +92,6 @@ export default function RolesPermission() {
         description: "We can't proccess your request, Please try again.",
       });
     }
-    // setLoading(false);
   };
 
   useEffect(() => {
@@ -115,8 +112,13 @@ export default function RolesPermission() {
 
   const [isFirstRender, setIsFirstRender] = useState(true);
   useEffect(() => {
-    setIsFirstRender(false);
-    fatchDatas();
+    const firstInit = async () => {
+      setLoading(true);
+      await fatchDatas();
+      setIsFirstRender(false);
+      setLoading(false);
+    };
+    firstInit();
   }, []);
   // End Master
 

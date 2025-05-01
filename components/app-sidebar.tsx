@@ -158,8 +158,8 @@ const data = {
       groupName: "System Config",
       menus: [
         {
-          title: "User List",
-          url: "/system-config/user-list",
+          title: "User Management",
+          url: "/system-config/user-management",
           icon: "bx bx-user-pin",
           slug: "usm-usl"
         },

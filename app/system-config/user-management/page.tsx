@@ -9,7 +9,7 @@ import TableTopToolbar from '@/components/table-top-toolbar';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TableShortList, TableThModel } from '@/lib/models-type';
-import { formatDate } from '@/lib/utils';
+import { formatDate, normalizeSelectObj, sortListToOrderBy } from '@/lib/utils';
 import { User } from '@prisma/client';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -33,16 +33,16 @@ export default function UserList() {
   const [inputSearch, setInputSearch] = useState("");
   const [tblSortList, setTblSortList] = useState<TableShortList[]>([]);
   const [tblThColomns, setTblThColomns] = useState<TableThModel[]>([
-    { key: "email", name: "Email", IsVisible: true },
-    { key: "accounts", name: "Account", IsVisible: true },
-    { key: "is_active", name: "Status", IsVisible: true },
-    { key: "role", name: "Role", IsVisible: true },
-    { key: "createdAt", name: "Created At", IsVisible: true },
+    { name: "Email", key: "email", key_sort: "email", IsVisible: true },
+    { name: "Fullname", key: "accounts[fullname,no_phone]", key_sort: "accounts.fullname", IsVisible: true },
+    { name: "Status", key: "is_active", key_sort: "is_active", IsVisible: true },
+    { name: "Role", key: "role[name]", key_sort: "role.name", IsVisible: true },
+    { name: "Created At", key: "createdAt", key_sort: "createdAt", IsVisible: true },
   ]);
   const fatchDatas = async (page: number = pageTable, countPage: number = perPage) => {
-    const selectObj = Object.fromEntries(tblThColomns.filter(col => col.IsVisible).map(col => [col.key, true]));
-    const orderObj = tblSortList.filter(col => col.sort && col.sort.trim() !== "").map(col => ({ [col.key as string]: col.sort }));
-
+    const selectObj = normalizeSelectObj(tblThColomns);
+    const orderObj = sortListToOrderBy(tblSortList);
+    
     try {
       const result = await GetDataUsers({
         curPage: page,

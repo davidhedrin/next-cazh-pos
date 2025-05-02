@@ -1,11 +1,12 @@
 export type TableThModel = {
   key: string; // must be colomn name table
   name: string;
+  key_sort: string;
   IsVisible?: boolean;
 };
 
 export type TableShortList = {
-  key?: string;
+  key: string;
   sort?: "asc" | "desc" | "";
 }
 

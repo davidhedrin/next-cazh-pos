@@ -17,7 +17,7 @@ import BreadcrumbListing from "@/components/breadcrumb-list";
 import { UseAlertDialog } from "@/components/alert-confirm";
 
 import { Badge } from "@/components/ui/badge"
-import { formatDate, SonnerPromise } from "@/lib/utils";
+import { formatDate, normalizeSelectObj, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
 import { GetDataRoles, StoreDataRoles, DeleteDataRole, GetDataRoleById } from "@/app/api/system-config/action";
 import { Roles } from "@prisma/client";
 import { toast } from "sonner";
@@ -55,15 +55,15 @@ export default function RolesPermission() {
   const [inputSearch, setInputSearch] = useState("");
   const [tblSortList, setTblSortList] = useState<TableShortList[]>([]);
   const [tblThColomns, setTblThColomns] = useState<TableThModel[]>([
-    { key: "name", name: "Name", IsVisible: true },
-    { key: "slug_name", name: "Code", IsVisible: true },
-    { key: "is_active", name: "Status", IsVisible: true },
-    { key: "createdBy", name: "Created By", IsVisible: true },
-    { key: "createdAt", name: "Created At", IsVisible: true },
+    { name: "Name", key: "name", key_sort: "name",  IsVisible: true },
+    { name: "Code", key: "slug_name", key_sort: "slug_name",  IsVisible: true },
+    { name: "Status", key: "is_active", key_sort: "is_active",  IsVisible: true },
+    { name: "Created By", key: "createdBy", key_sort: "createdBy",  IsVisible: true },
+    { name: "Created At", key: "createdAt", key_sort: "createdAt",  IsVisible: true },
   ]);
   const fatchDatas = async (page: number = pageTable, countPage: number = perPage) => {
-    const selectObj = Object.fromEntries(tblThColomns.filter(col => col.IsVisible).map(col => [col.key, true]));
-    const orderObj = tblSortList.filter(col => col.sort && col.sort.trim() !== "").map(col => ({ [col.key as string]: col.sort }));
+    const selectObj = normalizeSelectObj(tblThColomns);
+    const orderObj = sortListToOrderBy(tblSortList);
 
     try {
       const result = await GetDataRoles({
@@ -157,13 +157,13 @@ export default function RolesPermission() {
   const [inputSearchAddEdit, setInputSearchAddEdit] = useState("");
   const [tblSortListAddEdit, setTblSortListAddEdit] = useState<TableShortList[]>([]);
   const [tblThColomnsAddEdit, setTblThColomnsAddEdit] = useState<TableThModel[]>([
-    { key: "name", name: "Name", IsVisible: true },
-    { key: "slug", name: "Code", IsVisible: false },
-    { key: "is_active", name: "Status", IsVisible: false },
+    { name: "Name", key: "name", key_sort: "name", IsVisible: true },
+    { name: "Code", key: "slug", key_sort: "slug", IsVisible: false },
+    { name: "Status", key: "is_active", key_sort: "is_active", IsVisible: false },
   ]);
   const fatchDatasAddEdit = async (page: number = pageTableAddEdit, countPage: number = perPageAddEdit, menuStroes: DtoModuleAccess[] = dataStoreAddEdit) => {
-    const selectObj = Object.fromEntries(tblThColomnsAddEdit.filter(col => col.IsVisible).map(col => [col.key, true]));
-    const orderObj = tblSortListAddEdit.filter(col => col.sort && col.sort.trim() !== "").map(col => ({ [col.key as string]: col.sort }));
+    const selectObj = normalizeSelectObj(tblThColomnsAddEdit);
+    const orderObj = sortListToOrderBy(tblSortListAddEdit)
 
     try {
       const result = await GetDataMenus({

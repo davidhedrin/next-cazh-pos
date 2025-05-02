@@ -119,8 +119,8 @@ export default function TableTopToolbar({
                             </SelectTrigger>
                             <SelectContent>
                               {
-                                thColomn?.filter(x => x.IsVisible).map(y => {
-                                  return <SelectItem key={i + y.key} value={y.key}>{y.name}</SelectItem>
+                                thColomn?.filter(x => x.IsVisible && x.key_sort.trim() != "").map(y => {
+                                  return <SelectItem key={i + y.key} value={y.key_sort}>{y.name}</SelectItem>
                                 })
                               }
                             </SelectContent>

@@ -93,7 +93,7 @@ model User {
   business_id    Int?
   role_id        Int?
   is_active      Boolean?             @default(true)
-  accounts       Account?
+  account       Account?
   ver_token      VerificationToken?
   role           Roles?               @relation(fields: [role_id], references: [id], onDelete: SetNull)
   business       BusinessInfo?        @relation(fields: [business_id], references: [id], onDelete: Cascade)

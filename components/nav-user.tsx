@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/sidebar"
 
 import { signOutAuth } from '@/app/api/auth/action';
+import { UseAlertDialog } from "@/components/alert-confirm";
+import { useLoading } from '@/components/loading-context';
 
 type NavUserProps = {
   user: {
@@ -34,7 +36,22 @@ type NavUserProps = {
 export function NavUser({
   user,
 }: NavUserProps) {
+  const { openAlert } = UseAlertDialog();
+  const { setLoading } = useLoading();
   const { isMobile } = useSidebar();
+
+  const signOutAction = async () => {
+    const confirmed = await openAlert({
+      title: 'Wanna Logout?',
+      description: 'Are you sure you want to log out of your account?',
+      textConfirm: 'Yes, Log Out',
+      textClose: 'Cancel',
+      icon: 'bx bx-log-out bx-tada text-red-500'
+    });
+    if (!confirmed) return;
+
+    await signOutAuth();
+  }
 
   return (
     <SidebarMenu>
@@ -97,7 +114,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={signOutAuth}>
+            <DropdownMenuItem onClick={() => signOutAction()}>
               <i className='bx bx-log-out'></i>
               Log out
             </DropdownMenuItem>

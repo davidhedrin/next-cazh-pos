@@ -5,26 +5,23 @@ import { PaginateResult, CommonParams } from "@/lib/models-type";
 import { Prisma, Menus } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 
-export async function GetPaginatedData<T, Args extends { where?: any; select?: any; orderBy?: any }>(
-  model: {
-    findMany: (args: any) => Promise<T[]>;
-    count: (args: { where?: Args["where"] }) => Promise<number>;
-  },
-  params: Args & CommonParams
-): Promise<PaginateResult<T>> {
-  const { curPage = 1, perPage = 10, where, orderBy, select, ...rest } = params;
+type GetDataMenusParams = {
+  where?: Prisma.MenusWhereInput;
+  orderBy?: Prisma.MenusOrderByWithRelationInput | Prisma.MenusOrderByWithRelationInput[];
+  select?: Prisma.MenusSelect<DefaultArgs> | undefined;
+} & CommonParams;
+export async function GetDataMenus(params: GetDataMenusParams): Promise<PaginateResult<Menus>> {
+  const { curPage = 1, perPage = 10, where = {}, orderBy = {}, select } = params;
   const skip = (curPage - 1) * perPage;
-
   const [data, total] = await Promise.all([
-    model.findMany({
+    db.menus.findMany({
       skip,
       take: perPage,
       where,
       orderBy,
-      select,
-      ...rest,
+      select
     }),
-    model.count({ where }),
+    db.menus.count({ where })
   ]);
 
   return {
@@ -36,42 +33,4 @@ export async function GetPaginatedData<T, Args extends { where?: any; select?: a
       totalPages: Math.ceil(total / perPage),
     },
   };
-};
-
-type GetDataMenusParams = {
-  where?: Prisma.MenusWhereInput;
-  orderBy?: Prisma.MenusOrderByWithRelationInput | Prisma.MenusOrderByWithRelationInput[];
-  select?: Prisma.MenusSelect<DefaultArgs> | undefined;
-} & CommonParams;
-export async function GetDataMenus(params: GetDataMenusParams): Promise<PaginateResult<Menus>> {
-  const { curPage = 1, perPage = 10, where = {}, orderBy = {}, select } = params;
-  return await GetPaginatedData<Prisma.MenusGetPayload<{}>, Prisma.MenusFindManyArgs>(db.menus, {
-    curPage,
-    perPage,
-    where,
-    orderBy,
-    select
-  });
-
-  // const skip = (curPage - 1) * perPage;
-  // const [data, total] = await Promise.all([
-  //   db.menus.findMany({
-  //     skip,
-  //     take: perPage,
-  //     where,
-  //     orderBy,
-  //     select
-  //   }),
-  //   db.menus.count({ where })
-  // ]);
-
-  // return {
-  //   data,
-  //   meta: {
-  //     page: curPage,
-  //     limit: perPage,
-  //     total,
-  //     totalPages: Math.ceil(total / perPage),
-  //   },
-  // };
 }

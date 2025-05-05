@@ -30,11 +30,11 @@ export type CommonParams = {
 }
 
 export type PaginateResult<T> = {
-  data: T[]
+  data: T[];
   meta: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }

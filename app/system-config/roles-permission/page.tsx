@@ -400,18 +400,26 @@ export default function RolesPermission() {
               datas != null && datas?.length > 0 ? datas.map((data, i) => (
                 <TableRow key={data.id}>
                   <TableCell>{(pageTable - 1) * perPage + i + 1}</TableCell>
-                  {data.name && <TableCell>{data.name}</TableCell>}
-                  {data.slug_name && <TableCell>{data.slug_name}</TableCell>}
-                  {data.is_active != null && <TableCell><Badge className={`${data.is_active == true ? "success" : "secondary"}`}>{data.is_active == true ? "Active" : "Inactive"}</Badge></TableCell>}
-                  {data.createdBy && <TableCell>{data.createdBy}</TableCell>}
-                  {data.createdAt && <TableCell>{data.createdAt && formatDate(data.createdAt, "medium")}</TableCell>}
+
+                  {'name' in data && <TableCell>{data.name}</TableCell>}
+                  {'slug_name' in data && <TableCell>{data.slug_name}</TableCell>}
+                  {'is_active' in data && (
+                    <TableCell>
+                      <Badge className={`${data.is_active === true ? "success" : "secondary"}`}>
+                        {data.is_active === true ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  {'createdBy' in data && <TableCell>{data.createdBy}</TableCell>}
+                  {'createdAt' in data && (<TableCell>{data.createdAt ? formatDate(data.createdAt, "medium") : "-"}</TableCell>)}
+
                   <TableCell className="text-right space-x-1">
                     <i onClick={() => openModalAddEdit(data.id)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
                     <i onClick={() => deleteRow(data.id)} className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
                   </TableCell>
                 </TableRow>
               )) : <TableRow>
-                <TableCell className="text-center" colSpan={tblThColomns.length + 1}><i>No data found!</i></TableCell>
+                <TableCell className="text-center" colSpan={tblThColomns.length + 3}><i>No data found!</i></TableCell>
               </TableRow>
             }
           </TableBody>

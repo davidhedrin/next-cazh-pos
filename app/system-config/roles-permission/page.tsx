@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import TableTopToolbar from "@/components/table-top-toolbar";
 import TablePagination from "@/components/table-pagination";
 import { TableThModel, TableShortList, FormState } from "@/lib/models-type";
@@ -191,6 +191,7 @@ export default function RolesPermission() {
         return {
           id: findInStore?.id,
           menu_id: x.id,
+          menu_slug: x.slug,
           menu_name: x.name,
           read: findInStore?.read ?? false,
           create: findInStore?.create ?? false,
@@ -322,7 +323,6 @@ export default function RolesPermission() {
       }
       toast.dismiss(sonnerSubmit);
     }, 100);
-
   };
 
   const [openModal, setOpenModal] = useState(false);
@@ -334,6 +334,7 @@ export default function RolesPermission() {
         const roleMenus: DtoModuleAccess[] = data.role_menus.map(x => ({
           id: x.id,
           menu_id: x.menu_id,
+          menu_slug: x.menu_slug,
           menu_name: x.menu?.name,
           create: x.create ?? false,
           read: x.read ?? false,

@@ -112,7 +112,7 @@ export default function UserList() {
       <BreadcrumbListing listBc={listBreadcrumb} />
 
       <TableTopToolbar
-        tblName="Role List"
+        tblName="User List"
         inputSearch={inputSearch}
         tblSortList={tblSortList}
         thColomn={tblThColomns}
@@ -156,7 +156,7 @@ export default function UserList() {
 
                   <TableCell className="text-right space-x-1">
                     <i className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
-                    <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
+                    {/* <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i> */}
                   </TableCell>
                 </TableRow>
               )) : <TableRow>

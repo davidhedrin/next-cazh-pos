@@ -10,6 +10,7 @@ export type DtoRoles = {
 export type DtoModuleAccess = {
   id?: number | null;
   menu_id: number;
+  menu_slug: string;
   menu_name?: string | null;
   create?: boolean;
   read?: boolean;

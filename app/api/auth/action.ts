@@ -26,6 +26,35 @@ export async function signInCredential(formData: FormData) {
       email: data.email,
       password: data.password,
     });
+
+    const findData = db.user.findUnique({
+      where: {
+        email: data.email as string
+      },
+      select: {
+        email: true,
+        role_id: true,
+        is_active: true,
+        role: {
+          select: {
+            id: true,
+            slug: true,
+            slug_name: true,
+            name: true,
+            role_menus: {
+              select: {
+                menu_id: true,
+                menu_slug: true,
+                create: true,
+                read: true,
+                update: true,
+                delete: true,
+              }
+            },
+          }
+        }
+      }
+    })
   } catch (error: any) {
     if (error instanceof AuthError && error.type === "CallbackRouteError") throw new Error("Your email or password is incorrect!");
   }

@@ -72,24 +72,26 @@ export default function AuthSignup({ setSigninSignup }: { setSigninSignup: React
       });
       return;
     };
-
     setStateForm({ success: true, errors: {} });
-    const sonnerSignUp = SonnerPromise("Creating your account...", "Please wait, we're creating your account!");
+    
     setLoadingSubmit(true);
-    try {
-      await signUpAction(formData);
-
-      toast.success("Account created successfully!", {
-        description: "Welcome aboard!. Let's get started!",
-      });
-      push("/apps/dashboard");
-    } catch (error: any) {
-      toast.warning("Registration Failed!", {
-        description: error.message,
-      });
-    }
-    toast.dismiss(sonnerSignUp);
-    setLoadingSubmit(false);
+    setTimeout(async () => {
+      const sonnerSignUp = SonnerPromise("Creating your account...", "Please wait, we're creating your account!");
+      try {
+        await signUpAction(formData);
+  
+        toast.success("Account created successfully!", {
+          description: "Welcome aboard!. Let's get started!",
+        });
+        push("/apps/dashboard");
+      } catch (error: any) {
+        toast.warning("Registration Failed!", {
+          description: error.message,
+        });
+      }
+      toast.dismiss(sonnerSignUp);
+      setLoadingSubmit(false);
+    }, 100)
   };
 
   return (

@@ -36,24 +36,26 @@ export default function ForgtoPassword({ setSigninSignup }: { setSigninSignup: R
       });
       return;
     };
-
     setStateForm({ success: true, errors: {} });
-    const sonnerSignIn = SonnerPromise("Sending email...", "Hang tight, we're sending the reset link to your email");
+    
     setLoadingSubmit(true);
-    try {
-      await ForgotPassword(formData);
-
-      toast.success("Check your Email!", {
-        description: "We've send link reset password to your email.",
-      });
-      push("/");
-    } catch (error: any) {
-      toast.warning("Failed send Email!", {
-        description: error.message,
-      });
-    }
-    toast.dismiss(sonnerSignIn);
-    setLoadingSubmit(false);
+    setTimeout(async () => {
+      const sonnerSignIn = SonnerPromise("Sending email...", "Hang tight, we're sending the reset link to your email");
+      try {
+        await ForgotPassword(formData);
+  
+        toast.success("Check your Email!", {
+          description: "We've send link reset password to your email.",
+        });
+        push("/");
+      } catch (error: any) {
+        toast.warning("Failed send Email!", {
+          description: error.message,
+        });
+      }
+      toast.dismiss(sonnerSignIn);
+      setLoadingSubmit(false);
+    }, 100)
   };
 
   return (

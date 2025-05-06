@@ -31,7 +31,7 @@ export default function LayoutWraper({ children }: Readonly<{ children: React.Re
             <SiteHeader />
             <div className="flex flex-1 flex-col">
               <div className="@container/main flex flex-1 flex-col gap-2">
-                <div className="relative flex flex-col gap-3 overflow-auto p-4 lg:p-5">
+                <div className="relative flex flex-col gap-3 overflow-auto p-4 lg:p-5 lg:py-3">
                   {children}
                 </div>
               </div>

@@ -55,6 +55,7 @@ export default function ResetPassword({ searchParams }: { searchParams: Promise<
     message: "Confirmation password don't match",
     path: ["co_password"]
   });
+
   const handleSubmitForm = async (formData: FormData) => {
     const data = Object.fromEntries(formData);
     const valResult = FormSchemaChangePass.safeParse(data);
@@ -65,8 +66,8 @@ export default function ResetPassword({ searchParams }: { searchParams: Promise<
       });
       return;
     };
-
     setStateForm({ success: true, errors: {} });
+
     if (token === undefined || token.toString().trim() === "") {
       toast.warning("Invalid Token!", {
         description: "Looks like your token is missing. Click and try again!",
@@ -74,23 +75,25 @@ export default function ResetPassword({ searchParams }: { searchParams: Promise<
       return;
     }
     
-    const sonnerSignIn = SonnerPromise("Changing password...", "Wait a moment, we try to change your password");
     setLoadingSubmit(true);
-    try {
-      formData.append('token', token);
-      await resetPassword(formData);
-
-      toast.success("Password Changed!", {
-        description: "Your password has been change successfully.",
-      });
-      push("/auth");
-    } catch (error: any) {
-      toast.warning("Request Failed!", {
-        description: error.message,
-      });
-    }
-    toast.dismiss(sonnerSignIn);
-    setLoadingSubmit(false);
+    setTimeout(async () => {
+      const sonnerSignIn = SonnerPromise("Changing password...", "Wait a moment, we try to change your password");
+      try {
+        formData.append('token', token);
+        await resetPassword(formData);
+  
+        toast.success("Password Changed!", {
+          description: "Your password has been change successfully.",
+        });
+        push("/auth");
+      } catch (error: any) {
+        toast.warning("Request Failed!", {
+          description: error.message,
+        });
+      }
+      toast.dismiss(sonnerSignIn);
+      setLoadingSubmit(false);
+    }, 100)
   };
 
   return (

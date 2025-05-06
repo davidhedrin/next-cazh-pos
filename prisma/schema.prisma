@@ -66,13 +66,14 @@ model Roles {
 }
 
 model RoleMenus {
-  id      Int      @id @default(autoincrement())
-  role_id Int
-  menu_id Int
-  create  Boolean?
-  read    Boolean?
-  update  Boolean?
-  delete  Boolean?
+  id        Int      @id @default(autoincrement())
+  role_id   Int
+  menu_id   Int
+  menu_slug String
+  create    Boolean?
+  read      Boolean?
+  update    Boolean?
+  delete    Boolean?
 
   createdBy String?
   updatedBy String?
@@ -93,7 +94,7 @@ model User {
   business_id    Int?
   role_id        Int?
   is_active      Boolean?             @default(true)
-  account       Account?
+  account        Account?
   ver_token      VerificationToken?
   role           Roles?               @relation(fields: [role_id], references: [id], onDelete: SetNull)
   business       BusinessInfo?        @relation(fields: [business_id], references: [id], onDelete: Cascade)

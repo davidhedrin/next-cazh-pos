@@ -24,6 +24,8 @@ import {
 import { signOutAuth } from '@/app/api/auth/action';
 import { UseAlertDialog } from "@/components/alert-confirm";
 import { useLoading } from '@/components/loading-context';
+import { useState } from "react";
+import { toast } from "sonner";
 
 type NavUserProps = {
   user: {
@@ -36,27 +38,32 @@ type NavUserProps = {
 export function NavUser({
   user,
 }: NavUserProps) {
+  const [open, setOpen] = useState(false);
   const { openAlert } = UseAlertDialog();
   const { setLoading } = useLoading();
   const { isMobile } = useSidebar();
 
   const signOutAction = async () => {
+    setOpen(false);
     const confirmed = await openAlert({
-      title: 'Wanna Logout?',
+      title: 'Want to Logout?',
       description: 'Are you sure you want to log out of your account?',
-      textConfirm: 'Yes, Log Out',
-      textClose: 'Cancel',
+      textConfirm: 'Log Me Out',
+      textClose: 'Not Now',
       icon: 'bx bx-log-out bx-tada text-red-500'
     });
     if (!confirmed) return;
 
+    toast.success("Logged Out!", {
+      description: "We'll be here when you're ready to log back in.",
+    });
     await signOutAuth();
   }
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"

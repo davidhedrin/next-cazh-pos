@@ -53,24 +53,26 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
       });
       return;
     };
-
     setStateForm({success: true, errors: {}});
-    const sonnerSignIn = SonnerPromise("Signing you in...", "Please wait to Authenticating your credentials");
+
     setLoadingSubmit(true);
-    try {
-      await signInCredential(formData);
-      
-      toast.success("Login successfully!", {
-        description: `Welcome back ${email}`,
-      });
-      push("/apps/dashboard");
-    } catch (error: any) {
-      toast.warning("Invalid credentials!", {
-        description: error.message,
-      });
-    }
-    toast.dismiss(sonnerSignIn);
-    setLoadingSubmit(false);
+    setTimeout(async () => {
+      const sonnerSignIn = SonnerPromise("Signing you in...", "Please wait to Authenticating your credentials");
+      try {
+        await signInCredential(formData);
+        
+        toast.success("Login successfully!", {
+          description: `Welcome back ${email}`,
+        });
+        push("/apps/dashboard");
+      } catch (error: any) {
+        toast.warning("Invalid credentials!", {
+          description: error.message,
+        });
+      }
+      toast.dismiss(sonnerSignIn);
+      setLoadingSubmit(false);
+    }, 100)
   };
 
   return (

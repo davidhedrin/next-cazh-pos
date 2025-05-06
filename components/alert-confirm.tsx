@@ -56,7 +56,7 @@ export const AlertDialogProvider = ({ children }: { children: ReactNode }) => {
 
       {/* AlertDialog Component */}
       <AlertDialog open={isOpen} onOpenChange={handleCancel}>
-        <AlertDialogContent className='w-[320px] min-w-[320px]' onEscapeKeyDown={(e) => e.preventDefault()}>
+        <AlertDialogContent className='w-[320px] min-w-[320px] p-4' onEscapeKeyDown={(e) => e.preventDefault()}>
           <AlertDialogHeader className="gap-y-0">
             <AlertDialogTitle className="text-base text-center">{alertProps.title || 'Confirm Title'}</AlertDialogTitle>
             {alertProps.icon && (

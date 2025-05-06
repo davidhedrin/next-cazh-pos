@@ -9,12 +9,14 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dispatch, JSX, SetStateAction } from "react"
+import React, { Dispatch, SetStateAction } from "react"
+import { DatePickerWithRange } from '@/components/date-picker';
 
 import { TableShortList, TableThModel } from "@/lib/models-type";
 import { Check, ChevronsUpDown, Settings2 } from "lucide-react";
 import { cn, removeListStateByIndex } from "@/lib/utils";
 import { Badge } from "./ui/badge";
+import { DateRange } from "react-day-picker";
 
 type TableTopToolbarProps = {
   tblName?: string;
@@ -27,6 +29,8 @@ type TableTopToolbarProps = {
   fatchData?: (page?: number) => Promise<void>;
 
   openModal?: (id?: number) => Promise<void>;
+  dateRange?: DateRange | undefined;
+  setDateRange?: (date: DateRange | undefined) => void;
 };
 
 export default function TableTopToolbar({
@@ -39,7 +43,9 @@ export default function TableTopToolbar({
   setInputSearch,
   fatchData,
 
-  openModal
+  openModal,
+  dateRange,
+  setDateRange,
 }: TableTopToolbarProps) {
   const addSort = () => {
     const newRow: TableShortList = { key: "", sort: "" };
@@ -54,6 +60,12 @@ export default function TableTopToolbar({
     )
   };
 
+  // *** Example Date Range ***
+  // const [dateRange, setDateRange] = React.useState<DateRange | undefined>({
+  //   from: startOfMonth(new Date()),
+  //   to: endOfMonth(new Date()),
+  // });
+
   return (
     <div>
       {
@@ -64,7 +76,7 @@ export default function TableTopToolbar({
           </>
         ) : <></>
       }
-      <div className="flex flex-col w-full sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col w-full lg:flex-row lg:items-center lg:justify-between gap-2">
         <div className="flex items-center gap-2">
           {
             setInputSearch && <Command className="border border-b-0">
@@ -87,10 +99,18 @@ export default function TableTopToolbar({
 
         <div className="flex items-center gap-2 justify-end">
           {
+            dateRange && setDateRange && (
+              <div className="w-full">
+                <DatePickerWithRange dateVal={dateRange} setDateVal={setDateRange} />
+              </div>
+            )
+          }
+
+          {
             setTblSortList && <Popover modal={true}>
               <PopoverTrigger asChild>
                 <Button type="button" variant="outline" size="sm">
-                  <i className='bx bx-sort'></i> Sort
+                  <i className='bx bx-sort'></i> <span className="ml-auto hidden lg:flex">Sort</span>
                   {tblSortList && tblSortList.length > 0 && (
                     <Badge
                       variant="destructive"
@@ -171,11 +191,12 @@ export default function TableTopToolbar({
                   role="combobox"
                   variant="outline"
                   size="sm"
-                  className="ml-auto hidden h-8 lg:flex"
                 >
                   <Settings2 />
-                  View
-                  <ChevronsUpDown className="ml-auto opacity-50" />
+                  <span className="ml-auto hidden lg:flex">
+                    View
+                  </span>
+                  <ChevronsUpDown className="ml-auto opacity-50 hidden lg:flex" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-44 p-0">

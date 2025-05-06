@@ -93,6 +93,7 @@ export async function StoreDataRoles(formData: DtoRoles) {
             data: {
               role_id: roles.id,
               menu_id: x.menu_id ?? 0,
+              menu_slug: x.menu_slug,
               create: x.create ?? null,
               read: x.read ?? null,
               update: x.update ?? null,
@@ -108,6 +109,7 @@ export async function StoreDataRoles(formData: DtoRoles) {
           return {
             role_id: roles.id,
             menu_id: x.menu_id ?? 0,
+            menu_slug: x.menu_slug,
             create: x.create ?? null,
             read: x.read ?? null,
             update: x.update ?? null,

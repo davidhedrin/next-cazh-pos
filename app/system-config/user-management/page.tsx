@@ -3,7 +3,7 @@
 import { GetDataUsers } from '@/app/api/system-config/action';
 import { UseAlertDialog } from '@/components/alert-confirm';
 import BreadcrumbListing from '@/components/breadcrumb-list';
-import { useLoading } from '@/components/loading-context';
+import { useLoading } from '@/contexts/loading-context';
 import TablePagination from '@/components/table-pagination';
 import TableTopToolbar from '@/components/table-top-toolbar';
 import { Badge } from '@/components/ui/badge';

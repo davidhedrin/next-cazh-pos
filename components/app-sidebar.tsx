@@ -1,7 +1,6 @@
 "use client"
 
-import * as React from "react"
-
+import { useEffect, useState } from "react";
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import {
@@ -13,7 +12,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { GroupAppsMenu } from "@/lib/models-type"
+import AppsMenu from "@/lib/default-menus";
+import { GroupAppsMenu, AppSidebarMenu } from "@/lib/models-type";
+import { GetUserRole } from "@/app/api/action";
+import { RoleMenus } from "@prisma/client";
+import { useRole } from "@/contexts/role-context";
+import { Skeleton } from "./ui/skeleton";
 
 const data = {
   user: {
@@ -23,241 +27,21 @@ const data = {
   }
 };
 
-const appsMenu: GroupAppsMenu[] = [
-  {
-    groupName: "Apps",
-    menus: [
-      {
-        title: "Dashboard",
-        url: "/apps/dashboard",
-        icon: "bx bx-tachometer",
-        slug: "app-dsb",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Catalog",
-        url: "#",
-        icon: "bx bx-cart-add",
-        slug: "app-ctl",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Transactions",
-        url: "#",
-        icon: "bx bx-receipt",
-        slug: "app-trs",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-    ]
-  },
-  {
-    groupName: "Modules",
-    menus: [
-      {
-        title: "Absence",
-        url: "#",
-        icon: "bx bx-calendar-check",
-        slug: "app-abs",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Messages",
-        url: "#",
-        icon: "bx bx-conversation",
-        slug: "app-msg",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Announcements",
-        url: "#",
-        icon: "bx bx-bell bx-tada",
-        slug: "app-anc",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-    ]
-  },
-  {
-    groupName: "Warehouse",
-    menus: [
-      {
-        title: "Product",
-        url: "#",
-        icon: "bx bx-package",
-        slug: "whs-prd",
-        read: false,
-        create: false,
-        update: false,
-        delete: false,
-        items: [
-          {
-            title: "Pricing",
-            url: "#",
-            slug: "whs-prd-prs",
-            read: false,
-            create: false,
-            update: false,
-            delete: false
-          },
-          {
-            title: "Categories",
-            url: "#",
-            slug: "whs-prd-ctg",
-            read: false,
-            create: false,
-            update: false,
-            delete: false
-          },
-        ],
-      },
-      {
-        title: "Inventory",
-        url: "#",
-        icon: "bx bx-archive",
-        slug: "whs-ivt",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Discounts",
-        url: "#",
-        icon: "bx bx-purchase-tag-alt",
-        slug: "whs-dsc",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-    ]
-  },
-  {
-    groupName: "Reports & Analytics",
-    menus: [
-      {
-        title: "Sales",
-        url: "#",
-        icon: "bx bx-line-chart",
-        slug: "rna-sls",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Stock",
-        url: "#",
-        icon: "bx bx-bar-chart-alt-2",
-        slug: "rna-stc",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Financial",
-        url: "#",
-        icon: "bx bx-calculator",
-        slug: "rna-fin",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Product Traffic",
-        url: "#",
-        icon: "bx bx-stats",
-        slug: "rna-ptr",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-    ]
-  },
-  {
-    groupName: "Settings",
-    menus: [
-      {
-        title: "Store Information",
-        url: "#",
-        icon: "bx bx-store-alt",
-        slug: "set-sri",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Activity Logs",
-        url: "#",
-        icon: "bx bx-history",
-        slug: "set-acl",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "My Profile",
-        url: "#",
-        icon: "bx bx-id-card",
-        slug: "set-prf",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-    ]
-  },
-  {
-    groupName: "System Config",
-    menus: [
-      {
-        title: "User Management",
-        url: "/system-config/user-management",
-        icon: "bx bx-user-pin",
-        slug: "usm-usl",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-      {
-        title: "Roles & Permissions",
-        url: "/system-config/roles-permission",
-        icon: "bx bx-shield-quarter",
-        slug: "usm-rnp",
-        read: false,
-        create: false,
-        update: false,
-        delete: false
-      },
-    ]
-  },
-];
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const appName = process.env.NEXT_PUBLIC_APPS_NAME || "Cazh POS";
+  const [appMenus, setAppMenus] = useState<GroupAppsMenu[] | null>();
+  const { setRoleMenus } = useRole();
+
+  useEffect(() => {
+    const fatchData = async () => {
+      const defaultMenu = AppsMenu();
+      const roleMenus = await GetUserRole();
+      const filteredMenus = filterAppsMenu(defaultMenu, roleMenus?.role_menus ?? []);
+      setAppMenus(filteredMenus);
+      if (roleMenus && roleMenus.role_menus) setRoleMenus(roleMenus.role_menus);
+    };
+    fatchData();
+  }, []);
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -280,8 +64,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <hr className="my-2" />
       <SidebarContent>
+        <Skeleton className="h-full" />
         {
-          appsMenu.map((x, index) => {
+          appMenus && appMenus.map((x, index) => {
             return <NavMain key={index} items={x} />
           })
         }
@@ -291,4 +76,46 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
     </Sidebar>
   )
+}
+
+function filterAppsMenu(
+  appsMenuOriginal: GroupAppsMenu[],
+  roleMenus?: RoleMenus[] | null
+): GroupAppsMenu[] {
+  if (!roleMenus) return [];
+
+  const findInRole = (menu: AppSidebarMenu): AppSidebarMenu | null => {
+    const perm = roleMenus.find(x => x.menu_slug === menu.slug);
+    if (!perm) return null;
+
+    return {
+      ...menu,
+      create: perm.create ?? false,
+      read: perm.read ?? false,
+      update: perm.update ?? false,
+      delete: perm.delete ?? false,
+      isActive: false,
+      items: menu.items,
+    };
+  };
+
+  return appsMenuOriginal.map((group) => {
+    const setMenus = group.menus.map((menu) => {
+      const findMenu = findInRole(menu);
+      if (!findMenu) return null;
+
+      const menuItems = findMenu.items?.map(findInRole).filter(Boolean) as AppSidebarMenu[];
+
+      return {
+        ...findMenu,
+        items: menuItems?.length ? menuItems : null,
+      };
+    }).filter(Boolean) as AppSidebarMenu[];
+
+    if (setMenus.length === 0) return null;
+    return {
+      groupName: group.groupName,
+      menus: setMenus,
+    };
+  }).filter(Boolean) as GroupAppsMenu[];
 }

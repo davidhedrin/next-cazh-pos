@@ -23,7 +23,7 @@ import {
 
 import { signOutAuth } from '@/app/api/auth/action';
 import { UseAlertDialog } from "@/components/alert-confirm";
-import { useLoading } from '@/components/loading-context';
+import { useLoading } from '@/contexts/loading-context';
 import { useState } from "react";
 import { toast } from "sonner";
 

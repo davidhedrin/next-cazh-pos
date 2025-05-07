@@ -16,10 +16,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: {}
       },
       authorize: async (cred) => {
-        let finduser = null;
         const credEmail = cred?.email as string;
         const credPassword = cred?.password as string;
-        finduser = await db.user.findUnique({
+        const finduser = await db.user.findUnique({
           where: {
             email: credEmail
           }
@@ -41,11 +40,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.business_id = user.business_id
+        token.role_id = user.role_id
       }
       return token
     },
     session({ session, token }) {
       session.user.business_id = token.business_id as number
+      session.user.role_id =  token.role_id as number
       return session
     },
   },

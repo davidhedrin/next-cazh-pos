@@ -43,10 +43,10 @@ export type PaginateResult<T> = {
 
 export type GroupAppsMenu = {
   groupName: string;
-  menus: SidebarMenu[];
+  menus: AppSidebarMenu[];
 };
 
-export type SidebarMenu = {
+export type AppSidebarMenu = {
   title: string;
   url: string;
   icon?: string;
@@ -56,5 +56,5 @@ export type SidebarMenu = {
   update: boolean;
   delete: boolean;
   isActive?: boolean;
-  items?: SidebarMenu[];
+  items?: AppSidebarMenu[];
 };

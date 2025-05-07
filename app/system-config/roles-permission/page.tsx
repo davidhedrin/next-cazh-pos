@@ -1,6 +1,6 @@
 "use client"
 
-import { useLoading } from '@/components/loading-context';
+import { useLoading } from '@/contexts/loading-context';
 import {
   Table,
   TableBody,

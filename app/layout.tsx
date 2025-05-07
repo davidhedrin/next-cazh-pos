@@ -4,8 +4,8 @@ import "./globals.css";
 import "boxicons/css/boxicons.min.css";
 import LayoutWraper from "@/app/layout-wraper";
 import { SessionProvider } from "next-auth/react";
-import { ThemeProvider } from "@/components/theme-provider";
-import { LoadingProvider } from '@/components/loading-context';
+import { ThemeProvider } from "@/contexts/theme-context";
+import { LoadingProvider } from '@/contexts/loading-context';
 import { AlertDialogProvider } from "@/components/alert-confirm";
 
 import { Toaster } from "@/components/ui/sonner";

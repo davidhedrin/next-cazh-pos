@@ -2,7 +2,7 @@
 import { RoleMenus } from "@prisma/client";
 import React, { createContext, useContext, useState } from "react";
 
-type RoleContextType = {
+export type RoleContextType = {
   roleMenus: RoleMenus[];
   setRoleMenus: (menus: RoleMenus[]) => void;
 };

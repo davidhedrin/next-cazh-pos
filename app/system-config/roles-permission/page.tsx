@@ -1,4 +1,5 @@
 "use client"
+import { useRole } from '@/contexts/role-context';
 
 import { useLoading } from '@/contexts/loading-context';
 import {
@@ -19,7 +20,7 @@ import { UseAlertDialog } from "@/components/alert-confirm";
 import { Badge } from "@/components/ui/badge"
 import { formatDate, normalizeSelectObj, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
 import { GetDataRoles, StoreDataRoles, DeleteDataRole, GetDataRoleById } from "@/app/api/system-config/action";
-import { Roles } from "@prisma/client";
+import { RoleMenus, Roles } from "@prisma/client";
 import { toast } from "sonner";
 
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,7 @@ import { ZodErrors } from '@/components/zod-errors';
 import { DtoRoles, DtoModuleAccess } from '@/lib/dto-type';
 
 export default function RolesPermission() {
+  const { roleMenus } = useRole();
   const { setLoading } = useLoading();
   const { openAlert } = UseAlertDialog();
 
@@ -46,6 +48,7 @@ export default function RolesPermission() {
   ];
 
   // Start Master
+  const [accessPage, setAccessPage] = useState<RoleMenus>();
   const [inputPage, setInputPage] = useState("1");
   const [pageTable, setPageTable] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -55,11 +58,11 @@ export default function RolesPermission() {
   const [inputSearch, setInputSearch] = useState("");
   const [tblSortList, setTblSortList] = useState<TableShortList[]>([]);
   const [tblThColomns, setTblThColomns] = useState<TableThModel[]>([
-    { name: "Name", key: "name", key_sort: "name",  IsVisible: true },
-    { name: "Code", key: "slug_name", key_sort: "slug_name",  IsVisible: true },
-    { name: "Status", key: "is_active", key_sort: "is_active",  IsVisible: true },
-    { name: "Created By", key: "createdBy", key_sort: "createdBy",  IsVisible: true },
-    { name: "Created At", key: "createdAt", key_sort: "createdAt",  IsVisible: true },
+    { name: "Name", key: "name", key_sort: "name", IsVisible: true },
+    { name: "Code", key: "slug_name", key_sort: "slug_name", IsVisible: true },
+    { name: "Status", key: "is_active", key_sort: "is_active", IsVisible: true },
+    { name: "Created By", key: "createdBy", key_sort: "createdBy", IsVisible: true },
+    { name: "Created At", key: "createdAt", key_sort: "createdAt", IsVisible: true },
   ]);
   const fatchDatas = async (page: number = pageTable, countPage: number = perPage) => {
     const selectObj = normalizeSelectObj(tblThColomns);
@@ -112,14 +115,18 @@ export default function RolesPermission() {
 
   const [isFirstRender, setIsFirstRender] = useState(true);
   useEffect(() => {
+    setLoading(true);
     const firstInit = async () => {
-      setLoading(true);
       await fatchDatas();
       setIsFirstRender(false);
       setLoading(false);
     };
-    firstInit();
-  }, []);
+    if (roleMenus != undefined && roleMenus.length > 0) {
+      const permission = roleMenus.find((rm) => rm.menu_slug === "usm-rnp");
+      setAccessPage(permission);
+      firstInit();
+    }
+  }, [roleMenus]);
   // End Master
 
   const deleteRow = async (id: number) => {
@@ -381,7 +388,7 @@ export default function RolesPermission() {
         setInputSearch={setInputSearch}
         fatchData={() => fatchDatas(pageTable)}
 
-        openModal={() => openModalAddEdit()}
+        openModal={accessPage?.create == true ? () => openModalAddEdit() : undefined}
       />
       <div className="overflow-hidden rounded-lg border">
         <Table>
@@ -393,7 +400,7 @@ export default function RolesPermission() {
                   if (x.IsVisible) return <TableHead key={x.key}>{x.name}</TableHead>
                 })
               }
-              <TableHead className="text-right">Action</TableHead>
+              {(accessPage?.update == true || accessPage?.delete == true) && <TableHead className="text-right">Action</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -414,10 +421,16 @@ export default function RolesPermission() {
                   {'createdBy' in data && <TableCell>{data.createdBy}</TableCell>}
                   {'createdAt' in data && (<TableCell>{data.createdAt ? formatDate(data.createdAt, "medium") : "-"}</TableCell>)}
 
-                  <TableCell className="text-right space-x-1">
-                    <i onClick={() => openModalAddEdit(data.id)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
-                    <i onClick={() => deleteRow(data.id)} className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
-                  </TableCell>
+                  {
+                     (accessPage && accessPage?.update == true || accessPage?.delete == true) && <TableCell className="text-right space-x-1">
+                      {
+                        accessPage.update == true && <i onClick={() => openModalAddEdit(data.id)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
+                      }
+                      {
+                        accessPage.delete == true && <i onClick={() => deleteRow(data.id)} className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
+                      }
+                    </TableCell>
+                  }
                 </TableRow>
               )) : <TableRow>
                 <TableCell className="text-center" colSpan={tblThColomns.length + 3}><i>No data found!</i></TableCell>

@@ -14,9 +14,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { useLoading } from "@/contexts/loading-context";
 
 export default function Page() {
   // const session = useSession();
+  const { setLoading } = useLoading();
   const [datas, setDatas] = useState<User[] | null>(null);
   useEffect(() => {
     fatchDataUser();
@@ -25,6 +27,7 @@ export default function Page() {
   const fatchDataUser = async () => {
     const result = await GetDataUser();
     setDatas(result);
+    setLoading(false);
   }
 
   return (

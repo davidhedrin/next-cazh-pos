@@ -1,4 +1,5 @@
 "use client";
+import { useRole } from '@/contexts/role-context';
 
 import { GetDataUsers } from '@/app/api/system-config/action';
 import { UseAlertDialog } from '@/components/alert-confirm';
@@ -10,11 +11,12 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TableShortList, TableThModel } from '@/lib/models-type';
 import { formatDate, normalizeSelectObj, sortListToOrderBy } from '@/lib/utils';
-import { Account, Roles, User } from '@prisma/client';
+import { Account, RoleMenus, Roles, User } from '@prisma/client';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function UserList() {
+  const { roleMenus } = useRole();
   const { setLoading } = useLoading();
   const { openAlert } = UseAlertDialog();
 
@@ -24,6 +26,7 @@ export default function UserList() {
   ];
 
   // Start Master
+  const [accessPage, setAccessPage] = useState<RoleMenus>();
   const [inputPage, setInputPage] = useState("1");
   const [pageTable, setPageTable] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -98,14 +101,18 @@ export default function UserList() {
 
   const [isFirstRender, setIsFirstRender] = useState(true);
   useEffect(() => {
+    setLoading(true);
     const firstInit = async () => {
-      setLoading(true);
       await fatchDatas();
       setIsFirstRender(false);
       setLoading(false);
     };
-    firstInit();
-  }, []);
+    if (roleMenus != undefined && roleMenus.length > 0) {
+      const permission = roleMenus.find((rm) => rm.menu_slug === "usm-usl");
+      setAccessPage(permission);
+      firstInit();
+    }
+  }, [roleMenus]);
 
   return (
     <>
@@ -133,7 +140,7 @@ export default function UserList() {
                   if (x.IsVisible) return <TableHead key={x.key}>{x.name}</TableHead>
                 })
               }
-              <TableHead className="text-right">Action</TableHead>
+              {(accessPage?.update == true || accessPage?.delete == true) && <TableHead className="text-right">Action</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -154,10 +161,16 @@ export default function UserList() {
                   {'role' in data && <TableCell>{data.role ? data.role.name : "-"}</TableCell>}
                   {'createdAt' in data && (<TableCell>{data.createdAt ? formatDate(data.createdAt, "medium") : "-"}</TableCell>)}
 
-                  <TableCell className="text-right space-x-1">
-                    <i className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
-                    {/* <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i> */}
-                  </TableCell>
+                  {
+                    (accessPage && accessPage?.update == true || accessPage?.delete == true) && <TableCell className="text-right space-x-1">
+                      {
+                        accessPage.update == true && <i className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
+                      }
+                      {
+                        accessPage.delete == true && <i className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
+                      }
+                    </TableCell>
+                  }
                 </TableRow>
               )) : <TableRow>
                 <TableCell className="text-center" colSpan={tblThColomns.length + 3}><i>No data found!</i></TableCell>

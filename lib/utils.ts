@@ -3,10 +3,6 @@ import { twMerge } from "tailwind-merge"
 import bcrypt from "bcryptjs";
 import { ExternalToast, toast } from "sonner";
 import { TableShortList, TableThModel } from "./models-type";
-import { RoleMenus } from "@prisma/client";
-import { usePathname } from "next/navigation";
-import { useRole } from "@/contexts/role-context";
-import AppsMenu from "./default-menus";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -107,17 +103,4 @@ export function normalizeSelectObj(tblThColomns: TableThModel[]): Record<string,
   });
 
   return selectObj;
-};
-
-export const useCurPermission = (): RoleMenus | undefined => {
-  const pathname = usePathname();
-  const { roleMenus } = useRole();
-
-  const currentMenu = AppsMenu()
-    .flatMap((group) => group.menus)
-    .flatMap((menu) => [menu, ...(menu.items || [])])
-    .find((m) => pathname.startsWith(m.url || ""));
-
-  const permission = roleMenus.find((rm) => rm.menu_slug === currentMenu?.slug);
-  return permission;
 };

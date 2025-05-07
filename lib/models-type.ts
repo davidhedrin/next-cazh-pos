@@ -1,3 +1,5 @@
+import { RoleMenus, Roles } from "@prisma/client";
+
 export type TableThModel = {
   key: string; // must be colomn name table
   name: string;
@@ -8,7 +10,7 @@ export type TableThModel = {
 export type TableShortList = {
   key: string;
   sort?: "asc" | "desc" | "";
-}
+};
 
 export type FormState = {
   title?: string;
@@ -22,12 +24,12 @@ export type FormState = {
 export type BreadcrumbModel = {
   name: string;
   url?: string;
-}
+};
 
 export type CommonParams = {
   curPage?: number;
   perPage?: number;
-}
+};
 
 export type PaginateResult<T> = {
   data: T[];
@@ -37,4 +39,22 @@ export type PaginateResult<T> = {
     total: number;
     totalPages: number;
   };
-}
+};
+
+export type GroupAppsMenu = {
+  groupName: string;
+  menus: SidebarMenu[];
+};
+
+export type SidebarMenu = {
+  title: string;
+  url: string;
+  icon?: string;
+  slug: string;
+  create: boolean;
+  read: boolean;
+  update: boolean;
+  delete: boolean;
+  isActive?: boolean;
+  items?: SidebarMenu[];
+};

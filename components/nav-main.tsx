@@ -16,24 +16,13 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import { GroupAppsMenu } from "@/lib/models-type"
 import Link from "next/link"
 
 export function NavMain({
   items,
 }: {
-  items: {
-    groupName: string
-    menus: {
-      title: string
-      url: string
-      icon: string
-      isActive?: boolean
-      items?: {
-        title: string
-        url: string
-      }[]
-    }[]
-  }
+  items: GroupAppsMenu
 }) {
   return (
     <SidebarGroup>

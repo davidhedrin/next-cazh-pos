@@ -59,12 +59,13 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
     setTimeout(async () => {
       const sonnerSignIn = SonnerPromise("Signing you in...", "Please wait to Authenticating your credentials");
       try {
-        await signInCredential(formData);
-        
-        toast.success("Login successfully!", {
-          description: `Welcome back ${email}`,
-        });
-        push("/apps/dashboard");
+        const userData = await signInCredential(formData);
+        if(userData) {
+          toast.success("Login successfully!", {
+            description: `Welcome back ${email}`,
+          });
+          push("/apps/dashboard");
+        }
       } catch (error: any) {
         toast.warning("Invalid credentials!", {
           description: error.message,

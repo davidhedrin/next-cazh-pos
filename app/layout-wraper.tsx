@@ -37,13 +37,12 @@ export default function LayoutWraper({ children }: Readonly<{ children: React.Re
               </div>
             </div>
           </SidebarInset>
-        </SidebarProvider>
-          : <>
-            <div className="fixed top-1/2 right-0 transform -translate-y-1/2 p-4">
-              <ModeToggle variant={'outline'} />
-            </div>
-            {children}
-          </>
+        </SidebarProvider> : <>
+          <div className="fixed top-1/2 right-0 transform -translate-y-1/2 p-4">
+            <ModeToggle variant={'outline'} />
+          </div>
+          {children}
+        </>
       }
     </>
   )

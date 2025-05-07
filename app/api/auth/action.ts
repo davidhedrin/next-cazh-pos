@@ -4,6 +4,7 @@ import { db } from "@/prisma/db";
 import { hashPassword } from "@/lib/utils";
 import { auth, signIn, signOut } from "@/lib/auth-setup"
 import { AuthError } from "next-auth";
+import { User } from "@prisma/client";
 
 export async function signInGoogle() {
   await signIn("google");
@@ -27,36 +28,24 @@ export async function signInCredential(formData: FormData) {
       password: data.password,
     });
 
-    const findData = db.user.findUnique({
+    const findData = await db.user.findUnique({
       where: {
         email: data.email as string
       },
-      select: {
-        email: true,
-        role_id: true,
-        is_active: true,
+      include: {
         role: {
-          select: {
-            id: true,
-            slug: true,
-            slug_name: true,
-            name: true,
-            role_menus: {
-              select: {
-                menu_id: true,
-                menu_slug: true,
-                create: true,
-                read: true,
-                update: true,
-                delete: true,
-              }
-            },
+          include: {
+            role_menus: true
           }
         }
       }
-    })
+    });
+
+    if(!findData) throw new Error("User not found!");
+    return findData;
   } catch (error: any) {
     if (error instanceof AuthError && error.type === "CallbackRouteError") throw new Error("Your email or password is incorrect!");
+    throw error;
   }
 }
 

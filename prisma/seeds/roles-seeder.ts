@@ -7,7 +7,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
   
     await tx.roles.createMany({
       data: [
-        { slug: "1-sp-adm", slug_name:"sp-adm", business_id: 1, name: "Super Administrator", createdBy: "SEEDER" }, // ID: 1
+        { slug: "1-sp-adm", slug_name:"sp-adm", is_delete: false, business_id: 1, name: "Super Administrator", createdBy: "SEEDER" }, // ID: 1
         { slug: "1-adm", slug_name:"adm", business_id: 1, name: "Administrator", createdBy: "SEEDER" }, // ID: 2
         { slug: "1-spv", slug_name:"spv", business_id: 1, name: "Supervisor", createdBy: "SEEDER" }, // ID: 3
         { slug: "1-emp", slug_name:"emp", business_id: 1, name: "Employee", createdBy: "SEEDER" }, // ID: 4

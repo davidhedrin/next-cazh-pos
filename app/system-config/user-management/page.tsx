@@ -14,6 +14,7 @@ import { formatDate, normalizeSelectObj, sortListToOrderBy } from '@/lib/utils';
 import { Account, RoleMenus, Roles, User } from '@prisma/client';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { redirect } from 'next/navigation';
 
 export default function UserList() {
   const { roleMenus } = useRole();
@@ -109,6 +110,8 @@ export default function UserList() {
     };
     if (roleMenus != undefined && roleMenus.length > 0) {
       const permission = roleMenus.find((rm) => rm.menu_slug === "usm-usl");
+      if (!permission) redirect('/access-denied');
+
       setAccessPage(permission);
       firstInit();
     }

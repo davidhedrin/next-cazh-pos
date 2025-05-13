@@ -16,19 +16,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: {}
       },
       authorize: async (cred) => {
-        const credEmail = cred?.email as string;
-        const credPassword = cred?.password as string;
-        const finduser = await db.user.findUnique({
-          where: {
-            email: credEmail
-          }
-        });
+        try {
+          const credEmail = cred?.email as string;
+          const credPassword = cred?.password as string;
+          const finduser = await db.user.findUnique({
+            where: {
+              email: credEmail
+            }
+          });
 
-        if (!finduser) throw new Error("Your email or password is incorrect!");
-        
-        const verifiedPass = await verifyPassword(credPassword, finduser.password)
-        if(!verifiedPass) throw new Error("Your email or password is incorrect!");
-        return finduser;
+          if (!finduser) throw new Error("Your email or password is incorrect!");
+          
+          const verifiedPass = await verifyPassword(credPassword, finduser.password)
+          if(!verifiedPass) throw new Error("Your email or password is incorrect!");
+
+          return finduser;
+        } catch (err: any) {
+          throw new Error(err.message);
+        }
       }
     }),
   ],

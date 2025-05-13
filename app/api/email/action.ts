@@ -21,7 +21,8 @@ export async function ForgotPassword(formData: FormData) {
 
     const findEmail = await db.user.findUnique({
       where: {
-        email: email
+        email: email,
+        is_active: true
       }
     });
     if(!findEmail) throw new Error("Sorry, but the email is not registration on Cazh-POS");

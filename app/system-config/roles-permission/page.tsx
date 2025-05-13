@@ -35,7 +35,8 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { z } from 'zod';
 import { ZodErrors } from '@/components/zod-errors';
-import { DtoRoles, DtoModuleAccess } from '@/lib/dto-type';
+import { DtoRoles, DtoModuleAccess } from '@/prisma/DTO/roles';
+import { redirect } from 'next/navigation';
 
 export default function RolesPermission() {
   const { roleMenus } = useRole();
@@ -80,6 +81,7 @@ export default function RolesPermission() {
         },
         select: {
           id: true,
+          is_delete: true,
           ...selectObj
         },
         orderBy: orderObj
@@ -123,6 +125,8 @@ export default function RolesPermission() {
     };
     if (roleMenus != undefined && roleMenus.length > 0) {
       const permission = roleMenus.find((rm) => rm.menu_slug === "usm-rnp");
+      if(!permission) redirect('/access-denied');
+
       setAccessPage(permission);
       firstInit();
     }
@@ -185,6 +189,7 @@ export default function RolesPermission() {
         orderBy: orderObj,
         select: {
           id: true,
+          slug: true,
           ...selectObj
         },
       });
@@ -192,7 +197,7 @@ export default function RolesPermission() {
       setTotalCountAddEdit(result.meta.total);
       setPageTableAddEdit(result.meta.page);
       setInputPageAddEdit(result.meta.page.toString());
-
+      
       setDatasAddEdit(result.data.map(x => {
         const findInStore = menuStroes.find(y => y.menu_id === x.id);
         return {
@@ -427,7 +432,7 @@ export default function RolesPermission() {
                         accessPage.update == true && <i onClick={() => openModalAddEdit(data.id)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
                       }
                       {
-                        accessPage.delete == true && <i onClick={() => deleteRow(data.id)} className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
+                        (accessPage.delete == true && data.is_delete == true) && <i onClick={() => deleteRow(data.id)} className='bx bx-trash text-lg text-red-600 cursor-pointer'></i>
                       }
                     </TableCell>
                   }

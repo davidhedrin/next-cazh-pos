@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth-setup";
 import { PaginateResult, CommonParams } from "@/lib/models-type";
 import { Prisma, Roles, RoleMenus, Menus, User, Account } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
-import { DtoRoles } from "@/lib/dto-type";
+import { DtoRoles } from "@/prisma/DTO/roles";
 
 type GetDataRolesParams = {
   where?: Prisma.RolesWhereInput;

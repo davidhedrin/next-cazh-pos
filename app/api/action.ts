@@ -18,7 +18,10 @@ export async function GetDataMenus(params: GetDataMenusParams): Promise<Paginate
     db.menus.findMany({
       skip,
       take: perPage,
-      where,
+      where: {
+        ...where,
+        is_active: true
+      },
       orderBy,
       select
     }),
@@ -48,7 +51,10 @@ export async function GetUserRole(): Promise<Roles & {
   if(!user || !user.user) return null;
   
   const findData = await db.roles.findUnique({
-    where: { id: user?.user?.role_id },
+    where: { 
+      id: user?.user?.role_id,
+      is_active: true
+    },
     include: {
       role_menus: true
     }

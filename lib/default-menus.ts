@@ -173,6 +173,31 @@ export default function AppsMenu(): GroupAppsMenu[] {
       ]
     },
     {
+      groupName: "System Config",
+      menus: [
+        {
+          title: "User Management",
+          url: "/system-config/user-management",
+          icon: "bx bx-user-pin",
+          slug: "usm-usl",
+          read: false,
+          create: false,
+          update: false,
+          delete: false
+        },
+        {
+          title: "Roles & Permissions",
+          url: "/system-config/roles-permission",
+          icon: "bx bx-shield-quarter",
+          slug: "usm-rnp",
+          read: false,
+          create: false,
+          update: false,
+          delete: false
+        },
+      ]
+    },
+    {
       groupName: "Settings",
       menus: [
         {
@@ -200,31 +225,6 @@ export default function AppsMenu(): GroupAppsMenu[] {
           url: "#",
           icon: "bx bx-id-card",
           slug: "set-prf",
-          read: false,
-          create: false,
-          update: false,
-          delete: false
-        },
-      ]
-    },
-    {
-      groupName: "System Config",
-      menus: [
-        {
-          title: "User Management",
-          url: "/system-config/user-management",
-          icon: "bx bx-user-pin",
-          slug: "usm-usl",
-          read: false,
-          create: false,
-          update: false,
-          delete: false
-        },
-        {
-          title: "Roles & Permissions",
-          url: "/system-config/roles-permission",
-          icon: "bx bx-shield-quarter",
-          slug: "usm-rnp",
           read: false,
           create: false,
           update: false,

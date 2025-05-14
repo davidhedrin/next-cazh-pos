@@ -30,9 +30,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { GetDataMenus } from '@/app/api/action';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { DialogFooter } from '@/components/ui/dialog';
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { z } from 'zod';
 import { ZodErrors } from '@/components/zod-errors';
 import { DtoRoles, DtoModuleAccess } from '@/prisma/DTO/roles';
@@ -159,6 +158,7 @@ export default function RolesPermission() {
   };
 
   // Modal Add & Edit
+  const [openModal, setOpenModal] = useState(false);
   const [inputPageAddEdit, setInputPageAddEdit] = useState("1");
   const [pageTableAddEdit, setPageTableAddEdit] = useState(1);
   const [perPageAddEdit, setPerPageAddEdit] = useState(5);
@@ -337,7 +337,6 @@ export default function RolesPermission() {
     }, 100);
   };
 
-  const [openModal, setOpenModal] = useState(false);
   const openModalAddEdit = async (id?: number) => {
     const openSonner = SonnerPromise("Loading open form...");
     if (id) {
@@ -462,7 +461,7 @@ export default function RolesPermission() {
         <DialogContent className="p-4 text-sm sm:max-w-2xl" setOpenModal={() => closeModalAddEdit()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader className="justify-center gap-y-0">
             <DialogTitle className="text-base"><i className='bx bx-shield-quarter text-lg'></i> {addEditId ? "Edit" : "Add"} Role - Permission</DialogTitle>
-            <DialogDescription>Here to add new access role & permission</DialogDescription>
+            <DialogDescription>Here form to handle access role & permission data</DialogDescription>
           </DialogHeader>
           <form action={(formData) => handleFormSubmitAddEdit(formData)}>
             <div className='grid grid-cols-12 gap-3 mb-3'>

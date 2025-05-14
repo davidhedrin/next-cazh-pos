@@ -7,6 +7,7 @@ import { Prisma, Roles, RoleMenus, Menus, User, Account } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import { DtoRoles } from "@/prisma/DTO/roles";
 
+// Access Roles
 type GetDataRolesParams = {
   where?: Prisma.RolesWhereInput;
   orderBy?: Prisma.RolesOrderByWithRelationInput | Prisma.RolesOrderByWithRelationInput[];
@@ -180,7 +181,9 @@ export async function GetDataRoleById(id: number): Promise<ReturnGetDataRoleById
   
   return getData;
 }
+// End Access Roles
 
+// User Management
 type GetDataUsersParams = {
   where?: Prisma.UserWhereInput;
   orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[];
@@ -216,3 +219,6 @@ User & { account: Account | null, role: Roles | null}
     }
   };
 };
+
+
+// End User Management

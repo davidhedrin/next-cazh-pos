@@ -9,12 +9,22 @@ import TablePagination from '@/components/table-pagination';
 import TableTopToolbar from '@/components/table-top-toolbar';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { TableShortList, TableThModel } from '@/lib/models-type';
-import { formatDate, normalizeSelectObj, sortListToOrderBy } from '@/lib/utils';
+import { FormState, TableShortList, TableThModel } from '@/lib/models-type';
+import { cn, formatDate, normalizeSelectObj, SonnerPromise, sortListToOrderBy } from '@/lib/utils';
 import { Account, RoleMenus, Roles, User } from '@prisma/client';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { redirect } from 'next/navigation';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ZodErrors } from '@/components/zod-errors';
+import { z } from 'zod';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Check, ChevronDown } from 'lucide-react';
 
 export default function UserList() {
   const { roleMenus } = useRole();
@@ -116,6 +126,74 @@ export default function UserList() {
       firstInit();
     }
   }, [roleMenus]);
+  // End Master
+
+  // Modal Add & Edit
+  const [openModal, setOpenModal] = useState(false);
+  const [addEditId, setAddEditId] = useState<number | null>(null);
+  const [stateFormAddEdit, setStateFormAddEdit] = useState<FormState>({ success: false, errors: {} });
+  const [openSelectRole, setOpenSelectRole] = useState(false);
+  const [valueSelectRole, setValueSelectRole] = useState("");
+  const closeModalAddEdit = () => {
+    setStateFormAddEdit({ success: true, errors: {} });
+    setOpenModal(false);
+  };
+
+  const openModalAddEdit = async (id?: number) => {
+    if (id) {
+      const openSonner = SonnerPromise("Loading open form...");
+      // const data = await GetDataRoleById(id);
+    } else {
+      setAddEditId(null);
+    }
+    setOpenModal(true);
+  };
+
+  const [isActive, setIsActive] = useState<string>();
+  const handleFormSubmitAddEdit = async (formData: FormData) => {
+    // const data = Object.fromEntries(formData);
+    // const valResult = FormSchemaAddEdit.safeParse(data);
+    // if (!valResult.success) {
+    //   setStateFormAddEdit({
+    //     success: false,
+    //     errors: valResult.error.flatten().fieldErrors,
+    //   });
+    //   return;
+    // };
+    // setStateFormAddEdit({ success: true, errors: {} });
+
+    // setOpenModal(false);
+    // setTimeout(async () => {
+    //   const confirmed = await openAlert({
+    //     title: 'Submit Confirmation!',
+    //     description: 'Are you sure you want to submit this form? Please double-check before proceeding!',
+    //     textConfirm: 'Yes, Submit',
+    //     textClose: 'No, Go Back',
+    //     icon: 'bx bx-error bx-tada text-blue-500'
+    //   });
+    //   if (!confirmed) {
+    //     setOpenModal(true);
+    //     return;
+    //   }
+
+    //   const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
+    //   try {
+    //     await StoreDataRoles(createDtoData());
+    //     await fatchDatas();
+    //     toast.success("Submit successfully!", {
+    //       description: "Your submission has been successfully completed!",
+    //     });
+
+    //     setOpenModal(false);
+    //     setDataStoreAddEdit([]);
+    //   } catch (error: any) {
+    //     toast.warning("Request Failed!", {
+    //       description: error.message,
+    //     });
+    //   }
+    //   toast.dismiss(sonnerSubmit);
+    // }, 100);
+  };
 
   return (
     <>
@@ -131,7 +209,7 @@ export default function UserList() {
         setInputSearch={setInputSearch}
         fatchData={() => fatchDatas(pageTable)}
 
-      // openModal={() => openModalAddEdit()}
+        openModal={() => openModalAddEdit()}
       />
       <div className="overflow-hidden rounded-lg border">
         <Table>
@@ -194,6 +272,128 @@ export default function UserList() {
         inputPage={inputPage}
         setInputPage={setInputPage}
       />
+
+      {/* Modal Add & Edit */}
+      <Dialog open={openModal} onOpenChange={setOpenModal}>
+        <DialogContent className="p-4 text-sm sm:max-w-xl" setOpenModal={() => closeModalAddEdit()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+          <DialogHeader className="justify-center gap-y-0">
+            <DialogTitle className="text-base"><i className='bx bx-user-pin text-lg'></i> {addEditId ? "Edit" : "Add"} User Account</DialogTitle>
+            <DialogDescription>Here form to handle user account data</DialogDescription>
+          </DialogHeader>
+          <form action={(formData) => handleFormSubmitAddEdit(formData)}>
+            <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-3 mb-3'>
+              <div className="grid gap-2">
+                <Label className="gap-0" htmlFor="email">Email<span className="text-red-500">*</span></Label>
+                <div>
+                  <Input type="text" id="email" name="email" placeholder="Enter email address" />
+                  {/* {stateFormAddEdit.errors?.slug && <ZodErrors err={stateFormAddEdit.errors?.slug} />} */}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="gap-0" htmlFor="password">Password<span className="text-red-500">*</span></Label>
+                <div>
+                  <Input type="text" id="password" name="password" placeholder="Enter password account" />
+                  {/* {stateFormAddEdit.errors?.slug && <ZodErrors err={stateFormAddEdit.errors?.slug} />} */}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="gap-0" htmlFor="is_active">Status<span className="text-red-500">*</span></Label>
+                <div>
+                  <Select value={isActive} onValueChange={(val) => setIsActive(val)} name="is_active">
+                    <SelectTrigger id="is_active" className="w-full">
+                      <SelectValue placeholder="Select status account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="true">Active</SelectItem>
+                        <SelectItem value="false">Inactive</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {/* {stateFormAddEdit.errors?.is_active && <ZodErrors err={stateFormAddEdit.errors?.is_active} />} */}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label className="gap-0" htmlFor="role_account">Role<span className="text-red-500">*</span></Label>
+                <div>
+                  <Popover open={openSelectRole} onOpenChange={setOpenSelectRole} modal={true}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openSelectRole}
+                        className="w-full justify-between"
+                      >
+                        {valueSelectRole
+                          ? frameworks.find((framework) => framework.value === valueSelectRole)?.label
+                          : "Select framework..."}
+                        <ChevronDown className="opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search framework..." className="h-9" />
+                        <CommandList>
+                          <CommandEmpty>No framework found.</CommandEmpty>
+                          <CommandGroup>
+                            {frameworks.map((framework) => (
+                              <CommandItem
+                                key={framework.value}
+                                value={framework.value}
+                                onSelect={(currentValue) => {
+                                  setValueSelectRole(currentValue === valueSelectRole ? "" : currentValue)
+                                  setOpenSelectRole(false)
+                                }}
+                              >
+                                {framework.label}
+                                <Check
+                                  className={cn(
+                                    "ml-auto",
+                                    valueSelectRole === framework.value ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {/* {stateFormAddEdit.errors?.is_active && <ZodErrors err={stateFormAddEdit.errors?.is_active} />} */}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="submit" className="primary" size={'sm'}>Submit</Button>
+              <Button type="button" onClick={() => closeModalAddEdit()} variant={'outline'} size={'sm'}>Cancel</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
+
+const frameworks = [
+  {
+    value: "next.js",
+    label: "Next.js",
+  },
+  {
+    value: "sveltekit",
+    label: "SvelteKit",
+  },
+  {
+    value: "nuxt.js",
+    label: "Nuxt.js",
+  },
+  {
+    value: "remix",
+    label: "Remix",
+  },
+  {
+    value: "astro",
+    label: "Astro",
+  },
+]

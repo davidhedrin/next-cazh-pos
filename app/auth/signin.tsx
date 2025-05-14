@@ -65,8 +65,8 @@ export default function AuthSignin({ setSigninSignup }: { setSigninSignup: React
         });
         push("/apps/dashboard");
       } catch (error: any) {
-        toast.warning("Invalid credentials!", {
-          description: error.message,
+        toast.warning(error?.name || "Login failed!", {
+          description: error?.message || "An unknown error occurred.",
         });
       }
       toast.dismiss(sonnerSignIn);

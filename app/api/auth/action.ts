@@ -2,8 +2,7 @@
 
 import { db } from "@/prisma/db";
 import { hashPassword } from "@/lib/utils";
-import { auth, signIn, signOut } from "@/lib/auth-setup"
-import { AuthError } from "next-auth";
+import { signIn, signOut } from "@/lib/auth-setup"
 
 export async function signInGoogle() {
   await signIn("google");
@@ -15,16 +14,17 @@ export async function signOutAuth() {
 
 export async function signInCredential(formData: FormData) {
   const data = Object.fromEntries(formData);
+  const dataSign = {
+    redirect: false,
+    email: data.email,
+    password: data.password,
+  };
+  
   try {
-    await signIn("credentials", {
-      redirect: false,
-      callbackUrl: "/dashboard",
-      email: data.email,
-      password: data.password,
-    });
-  } catch (error: any) {
-    if (error instanceof AuthError && error.type === "CallbackRouteError") throw new Error("Your email or password is incorrect!");
-    throw error;
+    await signIn('credentials', dataSign);
+  } catch (err: any) {
+    if (err.type === "AuthError") throw err;
+    throw new Error("Unexpected error during sign-in.");
   }
 }
 

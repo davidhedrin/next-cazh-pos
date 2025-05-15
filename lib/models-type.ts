@@ -1,5 +1,3 @@
-import { RoleMenus, Roles } from "@prisma/client";
-
 export type TableThModel = {
   key: string; // must be colomn name table
   name: string;

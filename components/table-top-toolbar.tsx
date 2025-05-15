@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import React, { Dispatch, SetStateAction } from "react"
-import { DatePickerWithRange } from '@/components/date-picker';
+import { DatePickerWithRange } from '@/components/date-range-picker';
 
 import { TableShortList, TableThModel } from "@/lib/models-type";
 import { Check, ChevronsUpDown, Settings2 } from "lucide-react";

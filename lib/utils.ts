@@ -104,3 +104,16 @@ export function normalizeSelectObj(tblThColomns: TableThModel[]): Record<string,
 
   return selectObj;
 };
+
+export function stringWithTimestamp(length: number = 5): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let prefix = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    prefix += characters[randomIndex];
+  }
+
+  const timestamp = Date.now();
+  return `${prefix}${timestamp}`;
+}

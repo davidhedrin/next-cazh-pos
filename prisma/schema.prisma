@@ -149,16 +149,17 @@ model PasswordResetToken {
 }
 
 model StoresInfo {
-  id        Int     @id @default(autoincrement())
-  slug      String  @unique
-  name      String?
-  desc      String?
-  address   String?
-  no_tlp    String?
-  email     String?
-  is_active Boolean @default(true)
-  user_id   Int?
-  user      User?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         Int      @id @default(autoincrement())
+  slug       String   @unique
+  name       String?
+  desc       String?
+  address    String?
+  no_tlp     String?
+  email      String?
+  is_default Boolean?
+  is_active  Boolean  @default(true)
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   createdBy String?
   updatedBy String?

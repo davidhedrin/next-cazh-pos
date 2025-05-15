@@ -202,7 +202,7 @@ export default function AppsMenu(): GroupAppsMenu[] {
       menus: [
         {
           title: "Store Information",
-          url: "#",
+          url: "/settings/store-info",
           icon: "bx bx-store-alt",
           slug: "set-sri",
           read: false,

@@ -1,7 +1,7 @@
 "use client";
 import { useRole } from '@/contexts/role-context';
 
-import { GetDataUsers } from '@/app/api/system-config/action';
+import { GetDataRoles, GetDataUsers } from '@/app/api/system-config/action';
 import { UseAlertDialog } from '@/components/alert-confirm';
 import BreadcrumbListing from '@/components/breadcrumb-list';
 import { useLoading } from '@/contexts/loading-context';
@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FormState, TableShortList, TableThModel } from '@/lib/models-type';
 import { cn, formatDate, normalizeSelectObj, SonnerPromise, sortListToOrderBy } from '@/lib/utils';
 import { Account, RoleMenus, Roles, User } from '@prisma/client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { redirect } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -25,6 +25,9 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Check, ChevronDown } from 'lucide-react';
+import { MultiSelect } from '@/components/multi-select';
+import { DatePicker } from '@/components/date-picker';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function UserList() {
   const { roleMenus } = useRole();
@@ -85,8 +88,6 @@ export default function UserList() {
       setInputPage(result.meta.page.toString());
 
       setDatas(result.data);
-      console.log(result.data);
-
     } catch (error: any) {
       toast.warning("Something's gone wrong!", {
         description: "We can't proccess your request, Please try again.",
@@ -133,10 +134,49 @@ export default function UserList() {
   const [addEditId, setAddEditId] = useState<number | null>(null);
   const [stateFormAddEdit, setStateFormAddEdit] = useState<FormState>({ success: false, errors: {} });
   const [openSelectRole, setOpenSelectRole] = useState(false);
+  const [inputSearchPovRole, setInputSearchPovRole] = useState("");
   const [valueSelectRole, setValueSelectRole] = useState("");
+  const [datasRoles, setDatasRoles] = useState<Roles[] | null>(null);
   const closeModalAddEdit = () => {
     setStateFormAddEdit({ success: true, errors: {} });
     setOpenModal(false);
+  };
+
+  const fatchPovDataRole = async (search: string = inputSearchPovRole) => {
+    const getRole = await GetDataRoles({
+      curPage: 1,
+      perPage: 5,
+      where: {
+        is_active: true,
+        OR: [
+          { name: { contains: search.trim(), mode: "insensitive" } },
+          { slug: { contains: search.trim(), mode: "insensitive" } }
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        slug_name: true,
+      }
+    });
+    setDatasRoles(getRole.data);
+  };
+  const openPopoverRole = async (open: boolean) => {
+    setInputSearchPovRole("");
+    await fatchPovDataRole("");
+    setOpenSelectRole(open);
+  };
+  const timerRefSearchRole = useRef<NodeJS.Timeout | null>(null)
+  const onChangeSearchPovRole = (val: string) => {
+    setInputSearchPovRole(val);
+
+    if (timerRefSearchRole.current) {
+      clearTimeout(timerRefSearchRole.current)
+    }
+    timerRefSearchRole.current = setTimeout(() => {
+      fatchPovDataRole(val)
+    }, 400)
   };
 
   const openModalAddEdit = async (id?: number) => {
@@ -195,6 +235,7 @@ export default function UserList() {
     // }, 100);
   };
 
+  const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>();
   return (
     <>
       <BreadcrumbListing listBc={listBreadcrumb} />
@@ -275,94 +316,156 @@ export default function UserList() {
 
       {/* Modal Add & Edit */}
       <Dialog open={openModal} onOpenChange={setOpenModal}>
-        <DialogContent className="p-4 text-sm sm:max-w-xl" setOpenModal={() => closeModalAddEdit()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        <DialogContent className="p-4 text-sm sm:max-w-lg" setOpenModal={() => closeModalAddEdit()} onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader className="justify-center gap-y-0">
             <DialogTitle className="text-base"><i className='bx bx-user-pin text-lg'></i> {addEditId ? "Edit" : "Add"} User Account</DialogTitle>
             <DialogDescription>Here form to handle user account data</DialogDescription>
           </DialogHeader>
           <form action={(formData) => handleFormSubmitAddEdit(formData)}>
-            <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-3 mb-3'>
-              <div className="grid gap-2">
-                <Label className="gap-0" htmlFor="email">Email<span className="text-red-500">*</span></Label>
-                <div>
-                  <Input type="text" id="email" name="email" placeholder="Enter email address" />
-                  {/* {stateFormAddEdit.errors?.slug && <ZodErrors err={stateFormAddEdit.errors?.slug} />} */}
+            <ScrollArea type="always" className="h-[550px] md:h-auto lg:h-auto">
+              <div className='grid grid-cols-1 md:grid-cols-2 sm:grid-cols-2 gap-3 mb-3'>
+                <div className="grid gap-2">
+                  <Label className="gap-0" htmlFor="email">Email<span className="text-red-500">*</span></Label>
+                  <div>
+                    <Input type="text" id="email" name="email" placeholder="Enter email address" />
+                    {/* {stateFormAddEdit.errors?.slug && <ZodErrors err={stateFormAddEdit.errors?.slug} />} */}
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label className="gap-0" htmlFor="password">Password<span className="text-red-500">*</span></Label>
+                  <div>
+                    <Input type="text" id="password" name="password" placeholder="Enter password account" />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label className="gap-0" htmlFor="is_active">Status<span className="text-red-500">*</span></Label>
+                  <div>
+                    <Select value={isActive} onValueChange={(val) => setIsActive(val)} name="is_active">
+                      <SelectTrigger id="is_active" className="w-full">
+                        <SelectValue placeholder="Select status account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="true">Active</SelectItem>
+                          <SelectItem value="false">Inactive</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label onClick={() => openPopoverRole(true)} className="gap-0">Role<span className="text-red-500">*</span></Label>
+                  <div>
+                    <Popover open={openSelectRole} onOpenChange={openPopoverRole}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openSelectRole}
+                          className="w-full justify-between"
+                          style={{ fontWeight: "normal" }}
+                        >
+                          {(datasRoles && valueSelectRole) ? datasRoles.find((x) => x.id.toString() === valueSelectRole)?.name
+                            : <span className="font-normal text-muted-foreground">Select access role</span>}
+                          <ChevronDown className="opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
+                        <Command shouldFilter={false}>
+                          <CommandInput value={inputSearchPovRole} onValueChange={(val) => {
+                            onChangeSearchPovRole(val);
+                          }} placeholder="Search roles..." className="h-8" />
+                          <CommandList>
+                            <CommandEmpty>No framework found.</CommandEmpty>
+                            <CommandGroup>
+                              {datasRoles && datasRoles.map((x) => (
+                                <CommandItem
+                                  key={x.id}
+                                  value={x.id.toString()}
+                                  onSelect={(currentValue) => {
+                                    setValueSelectRole(currentValue === valueSelectRole ? "" : currentValue)
+                                    setOpenSelectRole(false)
+                                  }}
+                                >
+                                  {x.name}
+                                  <Check
+                                    className={cn(
+                                      "ml-auto",
+                                      valueSelectRole === x.id.toString() ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label className="gap-0" htmlFor="fullname">Fullname<span className="text-red-500">*</span></Label>
+                  <div>
+                    <Input type="text" id="fullname" name="fullname" placeholder="Enter fullname account" />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label className="gap-0" htmlFor="profile_picture">Picture</Label>
+                  <div>
+                    <Input type="file" id="profile_picture" name="profile_picture" placeholder="Enter profile picture" />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label className="gap-0" htmlFor="gender">Gender</Label>
+                  <div>
+                    <Select name="gender">
+                      <SelectTrigger id="gender" className="w-full">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label className="gap-0" htmlFor="no_phone">Phone Number</Label>
+                  <div>
+                    <Input type="text" id="no_phone" name="no_phone" placeholder="Enter phone number" />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label className="gap-0" htmlFor="birth_place">Birth Place</Label>
+                  <div>
+                    <Input type="text" id="birth_place" name="birth_place" placeholder="Enter birth place" />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label className="gap-0">Birth Date</Label>
+                  <DatePicker placeholder="Pick birth date" />
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label className="gap-0" htmlFor="password">Password<span className="text-red-500">*</span></Label>
+
+              <div className="grid gap-2 mb-4">
+                <Label className="gap-0">Access Store</Label>
                 <div>
-                  <Input type="text" id="password" name="password" placeholder="Enter password account" />
-                  {/* {stateFormAddEdit.errors?.slug && <ZodErrors err={stateFormAddEdit.errors?.slug} />} */}
+                  <MultiSelect
+                    options={frameworksList}
+                    onValueChange={setSelectedFrameworks}
+                    defaultValue={selectedFrameworks}
+                    placeholder="Select access store"
+                    variant="secondary"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Choose multiple access stores to streamline user permissions.
+                  </p>
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label className="gap-0" htmlFor="is_active">Status<span className="text-red-500">*</span></Label>
-                <div>
-                  <Select value={isActive} onValueChange={(val) => setIsActive(val)} name="is_active">
-                    <SelectTrigger id="is_active" className="w-full">
-                      <SelectValue placeholder="Select status account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="true">Active</SelectItem>
-                        <SelectItem value="false">Inactive</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {/* {stateFormAddEdit.errors?.is_active && <ZodErrors err={stateFormAddEdit.errors?.is_active} />} */}
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label className="gap-0" htmlFor="role_account">Role<span className="text-red-500">*</span></Label>
-                <div>
-                  <Popover open={openSelectRole} onOpenChange={setOpenSelectRole} modal={true}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={openSelectRole}
-                        className="w-full justify-between"
-                      >
-                        {valueSelectRole
-                          ? frameworks.find((framework) => framework.value === valueSelectRole)?.label
-                          : "Select framework..."}
-                        <ChevronDown className="opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
-                      <Command>
-                        <CommandInput placeholder="Search framework..." className="h-9" />
-                        <CommandList>
-                          <CommandEmpty>No framework found.</CommandEmpty>
-                          <CommandGroup>
-                            {frameworks.map((framework) => (
-                              <CommandItem
-                                key={framework.value}
-                                value={framework.value}
-                                onSelect={(currentValue) => {
-                                  setValueSelectRole(currentValue === valueSelectRole ? "" : currentValue)
-                                  setOpenSelectRole(false)
-                                }}
-                              >
-                                {framework.label}
-                                <Check
-                                  className={cn(
-                                    "ml-auto",
-                                    valueSelectRole === framework.value ? "opacity-100" : "opacity-0"
-                                  )}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  {/* {stateFormAddEdit.errors?.is_active && <ZodErrors err={stateFormAddEdit.errors?.is_active} />} */}
-                </div>
-              </div>
-            </div>
+            </ScrollArea>
 
             <DialogFooter>
               <Button type="submit" className="primary" size={'sm'}>Submit</Button>
@@ -374,26 +477,10 @@ export default function UserList() {
     </>
   )
 }
-
-const frameworks = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-]
+const frameworksList = [
+  { value: "react", label: "React" },
+  { value: "angular", label: "Angular" },
+  { value: "vue", label: "Vue" },
+  { value: "svelte", label: "Svelte" },
+  { value: "ember", label: "Ember" },
+];

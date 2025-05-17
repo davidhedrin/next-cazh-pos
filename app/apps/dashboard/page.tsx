@@ -1,9 +1,7 @@
 "use client";
 
 // import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { GetDataUser } from "@/app/api/apps/action";
-import { User } from "@prisma/client";
+import { useEffect } from "react";
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -19,16 +17,9 @@ import { useLoading } from "@/contexts/loading-context";
 export default function Page() {
   // const session = useSession();
   const { setLoading } = useLoading();
-  const [datas, setDatas] = useState<User[] | null>(null);
   useEffect(() => {
-    fatchDataUser();
-  }, []);
-
-  const fatchDataUser = async () => {
-    const result = await GetDataUser();
-    setDatas(result);
     setLoading(false);
-  }
+  }, []);
 
   return (
     <div>

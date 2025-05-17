@@ -11,5 +11,5 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
       ]
     });
   });
-  console.log('Multiple Stores Created!');
+  console.log('Multiple Business Created!');
 }

@@ -2,9 +2,9 @@
 
 import { db } from "@/prisma/db";
 import { auth } from "@/lib/auth-setup"
-import { PaginateResult, CommonParams } from "@/lib/models-type";
-import { Prisma, Menus, Roles, RoleMenus } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
+import { PaginateResult, CommonParams } from "@/lib/models-type";
+import { Prisma, Menus, Roles, RoleMenus, StoresAccess } from "@prisma/client";
 
 type GetDataMenusParams = {
   where?: Prisma.MenusWhereInput;
@@ -45,7 +45,7 @@ export async function getUserAuth() {
 }
 
 export async function GetUserRole(): Promise<Roles & {
-  role_menus: RoleMenus[] | null
+  role_menus: RoleMenus[] | null;
 } | null> {
   const user = await auth();
   if(!user || !user.user) return null;
@@ -57,6 +57,22 @@ export async function GetUserRole(): Promise<Roles & {
     },
     include: {
       role_menus: true
+    }
+  });
+
+  return findData;
+}
+
+export async function GetUserAccessStore(): Promise<StoresAccess[] | null> {
+  const user = await auth();
+  if(!user || !user.user || !user?.user?.id) return null;
+
+  const findData = await db.storesAccess.findMany({
+    where: { 
+      user_id: parseInt(user?.user?.id),
+      store: {
+        is_active: true
+      }
     }
   });
 

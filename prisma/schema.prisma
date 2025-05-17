@@ -21,7 +21,26 @@ model BusinessInfo {
   keyword   String[]
   is_active Boolean  @default(true)
   users     User[]
-  roles     Roles[]
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+}
+
+model StoresInfo {
+  id            Int            @id @default(autoincrement())
+  business_id   Int?
+  slug          String         @unique
+  name          String?
+  desc          String?
+  address       String?
+  no_tlp        String?
+  email         String?
+  is_active     Boolean        @default(true)
+  stores_access StoresAccess[]
 
   createdBy String?
   updatedBy String?
@@ -47,16 +66,15 @@ model Menus {
 }
 
 model Roles {
-  id          Int           @id @default(autoincrement())
-  slug        String        @unique
+  id          Int         @id @default(autoincrement())
+  business_id Int?
+  slug        String      @unique
   slug_name   String
   name        String?
-  business_id Int?
-  is_active   Boolean       @default(true)
+  is_active   Boolean     @default(true)
   role_menus  RoleMenus[]
   users       User[]
-  business    BusinessInfo? @relation(fields: [business_id], references: [id], onDelete: Cascade)
-  is_delete   Boolean       @default(true)
+  is_delete   Boolean     @default(true)
 
   createdBy String?
   updatedBy String?
@@ -67,14 +85,15 @@ model Roles {
 }
 
 model RoleMenus {
-  id        Int      @id @default(autoincrement())
-  role_id   Int
-  menu_id   Int
-  menu_slug String
-  create    Boolean?
-  read      Boolean?
-  update    Boolean?
-  delete    Boolean?
+  id          Int      @id @default(autoincrement())
+  business_id Int?
+  role_id     Int
+  menu_id     Int
+  menu_slug   String
+  create      Boolean?
+  read        Boolean?
+  update      Boolean?
+  delete      Boolean?
 
   createdBy String?
   updatedBy String?
@@ -89,10 +108,10 @@ model RoleMenus {
 
 model User {
   id             Int                  @id @default(autoincrement())
+  business_id    Int
   email          String               @unique
   password       String
   email_verified DateTime?
-  business_id    Int?
   role_id        Int?
   is_active      Boolean?             @default(true)
   account        Account?
@@ -100,7 +119,7 @@ model User {
   role           Roles?               @relation(fields: [role_id], references: [id], onDelete: SetNull)
   business       BusinessInfo?        @relation(fields: [business_id], references: [id], onDelete: Cascade)
   reset_tokens   PasswordResetToken[]
-  stores         StoresInfo[]
+  stores_access  StoresAccess[]
 
   createdBy String?
   updatedBy String?
@@ -112,6 +131,7 @@ model User {
 
 model Account {
   id          Int      @id @default(autoincrement())
+  business_id Int?
   userId      Int      @unique
   fullname    String?
   image       String?
@@ -148,18 +168,16 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model StoresInfo {
-  id         Int      @id @default(autoincrement())
-  slug       String   @unique
-  name       String?
-  desc       String?
-  address    String?
-  no_tlp     String?
-  email      String?
-  is_default Boolean?
-  is_active  Boolean  @default(true)
-  user_id    Int
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model StoresAccess {
+  id          Int        @id @default(autoincrement())
+  business_id Int?
+  is_default  Boolean
+  user_id     Int
+  store_id    Int
+  store_slug  String
+  store_name  String
+  user        User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  store       StoresInfo @relation(fields: [store_id], references: [id], onDelete: Cascade)
 
   createdBy String?
   updatedBy String?

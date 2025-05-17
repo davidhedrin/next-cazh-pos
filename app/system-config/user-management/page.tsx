@@ -1,7 +1,7 @@
 "use client";
 import { useRole } from '@/contexts/role-context';
 
-import { GetDataRoles, GetDataUsers } from '@/app/api/system-config/action';
+import { GetDataRoles, GetDataUsers } from '@/app/api/actions/system-config';
 import { UseAlertDialog } from '@/components/alert-confirm';
 import BreadcrumbListing from '@/components/breadcrumb-list';
 import { useLoading } from '@/contexts/loading-context';

@@ -19,7 +19,7 @@ import { UseAlertDialog } from "@/components/alert-confirm";
 
 import { Badge } from "@/components/ui/badge"
 import { formatDate, normalizeSelectObj, SonnerPromise, sortListToOrderBy } from "@/lib/utils";
-import { GetDataRoles, StoreDataRoles, DeleteDataRole, GetDataRoleById } from "@/app/api/system-config/action";
+import { GetDataRoles, StoreUpdateDataRoles, DeleteDataRole, GetDataRoleById } from "@/app/api/actions/system-config";
 import { RoleMenus, Roles } from "@prisma/client";
 import { toast } from "sonner";
 
@@ -27,14 +27,14 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { GetDataMenus } from '@/app/api/action';
+import { GetDataMenus } from '@/app/api/actions/common';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { z } from 'zod';
 import { ZodErrors } from '@/components/zod-errors';
-import { DtoRoles, DtoModuleAccess } from '@/prisma/DTO/roles';
+import { DtoRoles, DtoModuleAccess } from '@/lib/dto';
 import { redirect } from 'next/navigation';
 
 export default function RolesPermission() {
@@ -124,38 +124,13 @@ export default function RolesPermission() {
     };
     if (roleMenus != undefined && roleMenus.length > 0) {
       const permission = roleMenus.find((rm) => rm.menu_slug === "usm-rnp");
-      if(!permission) redirect('/access-denied');
+      if (!permission) redirect('/access-denied');
 
       setAccessPage(permission);
       firstInit();
     }
   }, [roleMenus]);
   // End Master
-
-  const deleteRow = async (id: number) => {
-    const confirmed = await openAlert({
-      title: 'Delete Confirmation!',
-      description: 'Are your sure want to delete this record? You will not abel to undo this action!',
-      textConfirm: 'Yes, Delete',
-      textClose: 'No, Keep It',
-      icon: 'bx bx-trash bx-tada text-red-500'
-    });
-    if (!confirmed) return;
-
-    const sonnerSubmit = SonnerPromise("Deleting proccess...", "Please wait, deletion data is in progress!");
-    try {
-      await DeleteDataRole(id);
-      await fatchDatas();
-      toast.success("Deletion Complete!", {
-        description: "The selected data has been removed successfully!",
-      });
-    } catch (error: any) {
-      toast.warning("Something's gone wrong!", {
-        description: "We can't proccess your request, Please try again.",
-      });
-    }
-    toast.dismiss(sonnerSubmit);
-  };
 
   // Modal Add & Edit
   const [openModal, setOpenModal] = useState(false);
@@ -197,7 +172,7 @@ export default function RolesPermission() {
       setTotalCountAddEdit(result.meta.total);
       setPageTableAddEdit(result.meta.page);
       setInputPageAddEdit(result.meta.page.toString());
-      
+
       setDatasAddEdit(result.data.map(x => {
         const findInStore = menuStroes.find(y => y.menu_id === x.id);
         return {
@@ -291,7 +266,6 @@ export default function RolesPermission() {
     };
     return newData;
   }
-
   const handleFormSubmitAddEdit = async (formData: FormData) => {
     const data = Object.fromEntries(formData);
     const valResult = FormSchemaAddEdit.safeParse(data);
@@ -320,7 +294,7 @@ export default function RolesPermission() {
 
       const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
       try {
-        await StoreDataRoles(createDtoData());
+        await StoreUpdateDataRoles(createDtoData());
         await fatchDatas();
         toast.success("Submit successfully!", {
           description: "Your submission has been successfully completed!",
@@ -336,7 +310,6 @@ export default function RolesPermission() {
       toast.dismiss(sonnerSubmit);
     }, 100);
   };
-
   const openModalAddEdit = async (id?: number) => {
     const openSonner = SonnerPromise("Loading open form...");
     if (id) {
@@ -363,8 +336,8 @@ export default function RolesPermission() {
       }
     } else {
       setAddEditId(null);
-      setTxtSlug("");
       setIsActive(undefined);
+      setTxtSlug("");
       setTxtName("");
       await fatchDatasAddEdit(1);
     }
@@ -377,6 +350,30 @@ export default function RolesPermission() {
     setDataStoreAddEdit([]);
     setOpenModal(false);
   }
+  const deleteRow = async (id: number) => {
+    const confirmed = await openAlert({
+      title: 'Delete Confirmation!',
+      description: 'Are your sure want to delete this record? You will not abel to undo this action!',
+      textConfirm: 'Yes, Delete',
+      textClose: 'No, Keep It',
+      icon: 'bx bx-trash bx-tada text-red-500'
+    });
+    if (!confirmed) return;
+
+    const sonnerSubmit = SonnerPromise("Deleting proccess...", "Please wait, deletion data is in progress!");
+    try {
+      await DeleteDataRole(id);
+      await fatchDatas();
+      toast.success("Deletion Complete!", {
+        description: "The selected data has been removed successfully!",
+      });
+    } catch (error: any) {
+      toast.warning("Something's gone wrong!", {
+        description: "We can't proccess your request, Please try again.",
+      });
+    }
+    toast.dismiss(sonnerSubmit);
+  };
 
   return (
     <>
@@ -426,7 +423,7 @@ export default function RolesPermission() {
                   {'createdAt' in data && (<TableCell>{data.createdAt ? formatDate(data.createdAt, "medium") : "-"}</TableCell>)}
 
                   {
-                     (accessPage && accessPage?.update == true || accessPage?.delete == true) && <TableCell className="text-right space-x-1">
+                    (accessPage && accessPage?.update == true || accessPage?.delete == true) && <TableCell className="text-right space-x-1">
                       {
                         accessPage.update == true && <i onClick={() => openModalAddEdit(data.id)} className='bx bx-edit text-lg text-amber-500 cursor-pointer'></i>
                       }

@@ -37,6 +37,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
     await tx.account.createMany({
       data: [
         {
+          business_id: 1,
           userId: 1,
           fullname: "David Simbolon",
           no_phone: "082110863133",
@@ -45,6 +46,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           birth_place: "Medan, Ranto Parapat",
         },
         {
+          business_id: 1,
           userId: 2,
           fullname: "Jesika Marbun",
           no_phone: "082110860667",

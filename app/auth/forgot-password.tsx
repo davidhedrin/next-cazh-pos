@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ForgotPassword } from '@/app/api/email/action';
+import { ForgotPassword } from '@/app/api/actions/email';
 import { ZodErrors } from '@/components/zod-errors';
 import { toast } from 'sonner';
 import { SonnerPromise } from '@/lib/utils';

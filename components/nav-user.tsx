@@ -57,6 +57,7 @@ export function NavUser({
     toast.success("Logged Out!", {
       description: "We'll be here when you're ready to log back in.",
     });
+    localStorage.clear();
     await signOutAuth();
   }
 

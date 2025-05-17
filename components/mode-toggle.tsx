@@ -17,7 +17,7 @@ export function ModeToggle({variant}: {variant?: "link" | "default" | "destructi
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="" variant={variant} size="icon">
+        <Button className="cursor-pointer" variant={variant} size="icon">
           <div className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0">
             <i className='bx bx-sun text-lg'></i>
           </div>

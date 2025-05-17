@@ -18,3 +18,13 @@ export type DtoModuleAccess = {
   delete?: boolean;
   is_selected?: boolean;
 };
+
+export type DtoStoreInfo = {
+  id: number | null;
+  name: string;
+  desc?: string | null;
+  address?: string | null;
+  no_tlp?: string | null;
+  email?: string | null;
+  is_active?: boolean;
+}

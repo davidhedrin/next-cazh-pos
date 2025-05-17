@@ -3,9 +3,9 @@
 import { db } from "@/prisma/db";
 import { auth } from "@/lib/auth-setup";
 import { PaginateResult, CommonParams } from "@/lib/models-type";
-import { Prisma, Roles, RoleMenus, Menus, User, Account } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
-import { DtoRoles } from "@/prisma/DTO/roles";
+import { Prisma, Roles, RoleMenus, Menus, User, Account } from "@prisma/client";
+import { DtoRoles } from "@/lib/dto";
 
 // Access Roles
 type GetDataRolesParams = {
@@ -14,13 +14,17 @@ type GetDataRolesParams = {
   select?: Prisma.RolesSelect<DefaultArgs> | undefined;
 } & CommonParams;
 export async function GetDataRoles(params: GetDataRolesParams): Promise<PaginateResult<Roles>> {
+  const user = await auth();
   const { curPage = 1, perPage = 10, where = {}, orderBy = {}, select } = params;
   const skip = (curPage - 1) * perPage;
   const [data, total] = await Promise.all([
     db.roles.findMany({
       skip,
       take: perPage,
-      where,
+      where: {
+        ...where,
+        business_id: user?.user?.business_id
+      },
       orderBy,
       select
     }),
@@ -37,9 +41,8 @@ export async function GetDataRoles(params: GetDataRolesParams): Promise<Paginate
     }
   };
 };
-
-export async function StoreDataRoles(formData: DtoRoles) {
-  try {    
+export async function StoreUpdateDataRoles(formData: DtoRoles) {
+  try {
     const session = await auth();
     if(!session) throw new Error("Authentication credential not Found!");
     const { user } = session;
@@ -92,6 +95,7 @@ export async function StoreDataRoles(formData: DtoRoles) {
           });
           else return tx.roleMenus.create({
             data: {
+              business_id: user?.business_id,
               role_id: roles.id,
               menu_id: x.menu_id ?? 0,
               menu_slug: x.menu_slug,
@@ -108,6 +112,7 @@ export async function StoreDataRoles(formData: DtoRoles) {
       }else{
         const listRoleMenus: Prisma.RoleMenusCreateManyInput[] = listModule.map(x => {
           return {
+            business_id: user?.business_id,
             role_id: roles.id,
             menu_id: x.menu_id ?? 0,
             menu_slug: x.menu_slug,
@@ -127,7 +132,27 @@ export async function StoreDataRoles(formData: DtoRoles) {
     throw new Error(error.message);
   }
 };
-
+type ReturnGetDataRoleById = Roles & {
+  role_menus: (RoleMenus & {
+    menu: Menus | null
+  })[];
+};
+export async function GetDataRoleById(id: number): Promise<ReturnGetDataRoleById | null> {
+  const getData = await db.roles.findUnique({
+    where: {
+      id
+    },
+    include: {
+      role_menus: {
+        include: {
+          menu: true
+        }
+      }
+    }
+  });
+  
+  return getData;
+}
 export async function DeleteDataRole(id: number) {
   try {
     const session = await auth();
@@ -159,28 +184,6 @@ export async function DeleteDataRole(id: number) {
     throw new Error(error.message);
   }
 };
-
-type ReturnGetDataRoleById = Roles & {
-  role_menus: (RoleMenus & {
-    menu: Menus | null
-  })[];
-};
-export async function GetDataRoleById(id: number): Promise<ReturnGetDataRoleById | null> {
-  const getData = await db.roles.findUnique({
-    where: {
-      id
-    },
-    include: {
-      role_menus: {
-        include: {
-          menu: true
-        }
-      }
-    }
-  });
-  
-  return getData;
-}
 // End Access Roles
 
 // User Management
@@ -192,13 +195,17 @@ type GetDataUsersParams = {
 export async function GetDataUsers(params: GetDataUsersParams): Promise<PaginateResult<
 User & { account: Account | null, role: Roles | null}
 >> {
+  const user = await auth();
   const { curPage = 1, perPage = 10, where = {}, orderBy = {}, select } = params;
   const skip = (curPage - 1) * perPage;
   const [data, total] = await Promise.all([
     db.user.findMany({
       skip,
       take: perPage,
-      where,
+      where: {
+        ...where,
+        business_id: user?.user?.business_id
+      },
       orderBy,
       select: {
         ...select,

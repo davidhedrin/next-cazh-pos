@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar"
 import AppsMenu from "@/lib/default-menus";
 import { GroupAppsMenu, AppSidebarMenu } from "@/lib/models-type";
-import { GetUserRole } from "@/app/api/action";
+import { GetUserRole } from "@/app/api/actions/common";
 import { RoleMenus } from "@prisma/client";
 import { useRole } from "@/contexts/role-context";
 import { Skeleton } from "./ui/skeleton";

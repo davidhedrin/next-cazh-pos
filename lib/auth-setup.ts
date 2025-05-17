@@ -53,12 +53,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     jwt({ token, user }) {
       if (user) {
+        token.id = user.id
         token.business_id = user.business_id
         token.role_id = user.role_id
       }
       return token
     },
     session({ session, token }) {
+      session.user.id = token.id as string
       session.user.business_id = token.business_id as number
       session.user.role_id =  token.role_id as number
       return session

@@ -54,7 +54,7 @@ export async function ForgotPassword(formData: FormData) {
       ...data
     });
   } catch (error: any) {
-    console.log("😡Email2:", error);
+    console.log("😡Email:", error);
     throw new Error(error.message);
   }
 }

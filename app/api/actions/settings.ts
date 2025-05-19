@@ -104,4 +104,19 @@ export async function DeleteDataStoreInfo(id: number) {
     throw new Error(error.message);
   }
 };
+
+export async function AllStoreInfo() {
+  const user = await auth();
+  const allData = await db.storesInfo.findMany({
+    where: { 
+      is_active: true,
+      business_id: user?.user?.business_id
+    },
+    select: {
+      slug: true,
+      name: true,
+    }
+  });
+  return allData;
+}
 // End Store Info

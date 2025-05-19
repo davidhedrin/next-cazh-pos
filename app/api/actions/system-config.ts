@@ -5,7 +5,8 @@ import { auth } from "@/lib/auth-setup";
 import { PaginateResult, CommonParams } from "@/lib/models-type";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import { Prisma, Roles, RoleMenus, Menus, User, Account } from "@prisma/client";
-import { DtoRoles } from "@/lib/dto";
+import { DtoRoles, DtoUserAccount } from "@/lib/dto";
+import { genSecurePassword, hashPassword } from "@/lib/utils";
 
 // Access Roles
 type GetDataRolesParams = {
@@ -226,6 +227,61 @@ User & { account: Account | null, role: Roles | null}
     }
   };
 };
+export async function StoreDataUser(formData:DtoUserAccount) {
+  try {
+    const session = await auth();
+    if(!session) throw new Error("Authentication credential not Found!");
+    const { user } = session;
+    
+    const data_id = formData.id ?? 0;
+    await db.$transaction(async (tx) => {
+      const createRandomPass = genSecurePassword(10);
+      const hashPass = await hashPassword(createRandomPass, 15);
 
+      const txUser = await tx.user.upsert({
+        where: { id: data_id },
+        update: {
+          role_id: formData.role_id,
+          is_active: formData.is_active_user,
+          updatedBy: user?.email
+        },
+        create: {
+          business_id: user?.business_id,
+          email: formData.email,
+          password: hashPass,
+          role_id: formData.role_id,
+          is_active: formData.is_active_user,
+          createdBy: user?.email
+        }
+      });
 
+      const data_id_acc = formData.id_account ?? 0;
+      await tx.account.upsert({
+        where: { id: data_id_acc},
+        update: {
+          fullname: formData.fullname,
+          image: null,
+          no_phone: formData.no_phone,
+          gender: formData.gender,
+          birth_date: formData.birth_date?.toString(),
+          birth_place: formData.birth_place,
+          is_active: formData.is_active_user
+        },
+        create: {
+          business_id: user?.business_id,
+          userId: txUser.id,
+          fullname: formData.fullname,
+          image: null,
+          no_phone: formData.no_phone,
+          gender: formData.gender,
+          birth_date: formData.birth_date?.toString(),
+          birth_place: formData.birth_place,
+          is_active: formData.is_active_user
+        }
+      })
+    });
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+}
 // End User Management

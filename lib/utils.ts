@@ -117,3 +117,25 @@ export function stringWithTimestamp(length: number = 5): string {
   const timestamp = Date.now();
   return `${prefix}${timestamp}`;
 }
+
+export function genSecurePassword(length: number): string {
+  const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = "0123456789";
+  const specialChars = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+  const allChars = letters + numbers + specialChars;
+
+  const getRandom = (chars: string) => chars[Math.floor(Math.random() * chars.length)];
+
+  const guaranteed = [
+    getRandom(letters),
+    getRandom(numbers),
+    getRandom(specialChars),
+  ];
+
+  const remainingLength = length - guaranteed.length;
+  for (let i = 0; i < remainingLength; i++) {
+    guaranteed.push(getRandom(allChars));
+  }
+
+  return guaranteed.sort(() => Math.random() - 0.5).join("");
+}

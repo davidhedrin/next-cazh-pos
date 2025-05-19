@@ -173,7 +173,7 @@ export default function AppsMenu(): GroupAppsMenu[] {
       ]
     },
     {
-      groupName: "System Config",
+      groupName: "Configurations",
       menus: [
         {
           title: "User Management",
@@ -190,6 +190,16 @@ export default function AppsMenu(): GroupAppsMenu[] {
           url: "/system-config/roles-permission",
           icon: "bx bx-shield-quarter",
           slug: "usm-rnp",
+          read: false,
+          create: false,
+          update: false,
+          delete: false
+        },
+        {
+          title: "Bank Account",
+          url: "#",
+          icon: "bx bx-wallet",
+          slug: "usm-bka",
           read: false,
           create: false,
           update: false,

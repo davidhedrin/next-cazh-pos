@@ -1,7 +1,7 @@
 "use client";
 import { useRole } from '@/contexts/role-context';
 
-import { GetDataRoles, GetDataUsers } from '@/app/api/actions/system-config';
+import { GetDataRoles, GetDataUsers, StoreDataUser } from '@/app/api/actions/system-config';
 import { UseAlertDialog } from '@/components/alert-confirm';
 import BreadcrumbListing from '@/components/breadcrumb-list';
 import { useLoading } from '@/contexts/loading-context';
@@ -25,9 +25,11 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Check, ChevronDown } from 'lucide-react';
-import { MultiSelect } from '@/components/multi-select';
+import { MultiSelect, MutipleSelectType } from '@/components/multi-select';
 import { DatePicker } from '@/components/date-picker';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DtoUserAccount } from '@/lib/dto';
+import { AllStoreInfo } from '@/app/api/actions/settings';
 
 export default function UserList() {
   const { roleMenus } = useRole();
@@ -131,15 +133,32 @@ export default function UserList() {
 
   // Modal Add & Edit
   const [openModal, setOpenModal] = useState(false);
-  const [addEditId, setAddEditId] = useState<number | null>(null);
   const [stateFormAddEdit, setStateFormAddEdit] = useState<FormState>({ success: false, errors: {} });
   const [openSelectRole, setOpenSelectRole] = useState(false);
   const [inputSearchPovRole, setInputSearchPovRole] = useState("");
-  const [valueSelectRole, setValueSelectRole] = useState("");
   const [datasRoles, setDatasRoles] = useState<Roles[] | null>(null);
+  const [storeAccessList, setStoreAccessList] = useState<MutipleSelectType[]>();
   const closeModalAddEdit = () => {
     setStateFormAddEdit({ success: true, errors: {} });
     setOpenModal(false);
+  };
+  const createDtoData = (): DtoUserAccount => {
+    const newData: DtoUserAccount = {
+      id: addEditId,
+      email: txtEmail,
+      role_id: parseInt(valueSelectRole),
+      is_active_user: isActive === "true" ? true : false,
+
+      id_account: addEditIdAccount,
+      fullname: txtFullname.trim() != "" ? txtFullname : null,
+      no_phone: txtNoPhone.trim() != "" ? txtNoPhone : null,
+      gender: txtGender.trim() != "" ? txtGender : null,
+      birth_date: txtBirthDate,
+      birth_place: txtBirthPlace.trim() != "" ? txtBirthPlace : null,
+
+      store_access: selectedStoreAccess || [],
+    };
+    return newData;
   };
 
   const fatchPovDataRole = async (search: string = inputSearchPovRole) => {
@@ -180,68 +199,104 @@ export default function UserList() {
   };
 
   const openModalAddEdit = async (id?: number) => {
+    const openSonner = SonnerPromise("Loading open form...");
+
+    const data = await AllStoreInfo();
+    const listData: MutipleSelectType[] = data.map(x => ({
+      label: x.name || "",
+      value: x.slug
+    }));
+    setStoreAccessList(listData);
+
     if (id) {
-      const openSonner = SonnerPromise("Loading open form...");
       // const data = await GetDataRoleById(id);
     } else {
       setAddEditId(null);
+      setSelectedStoreAccess([]);
+      setTxtEmail("");
+      setValueSelectRole("");
+      setTxtFullname("");
+      setTxtGender("");
+      setTxtNoPhone("");
+      setTxtBirthPlace("");
+      setTxtBirthDate(undefined);
+      setIsActive(undefined);
     }
+    toast.dismiss(openSonner);
     setOpenModal(true);
   };
 
+  const [addEditId, setAddEditId] = useState<number | null>(null);
+  const [addEditIdAccount, setAddEditIdAccount] = useState<number | null>(null);
+  const [selectedStoreAccess, setSelectedStoreAccess] = useState<MutipleSelectType[]>();
+  const [txtEmail, setTxtEmail] = useState("");
+  const [valueSelectRole, setValueSelectRole] = useState("");
+  const [txtFullname, setTxtFullname] = useState("");
+  const [txtGender, setTxtGender] = useState("");
+  const [txtNoPhone, setTxtNoPhone] = useState("");
+  const [txtBirthPlace, setTxtBirthPlace] = useState("");
+  const [txtBirthDate, setTxtBirthDate] = useState<Date>();
   const [isActive, setIsActive] = useState<string>();
+  // const [txtPassword, setTxtPassword] = useState("");
+  // const [txtPicture, setTxtPicture] = useState("");
+  const FormSchemaAddEdit = z.object({
+    email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
+    is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
+    role: z.string().min(1, { message: 'Role is required field.' }).trim(),
+    fullname: z.string().min(1, { message: 'Fullname is required field.' }).trim(),
+  });
   const handleFormSubmitAddEdit = async (formData: FormData) => {
-    // const data = Object.fromEntries(formData);
-    // const valResult = FormSchemaAddEdit.safeParse(data);
-    // if (!valResult.success) {
-    //   setStateFormAddEdit({
-    //     success: false,
-    //     errors: valResult.error.flatten().fieldErrors,
-    //   });
-    //   return;
-    // };
-    // setStateFormAddEdit({ success: true, errors: {} });
+    formData.append("role", valueSelectRole);
+    const data = Object.fromEntries(formData);
+    const valResult = FormSchemaAddEdit.safeParse(data);
+    if (!valResult.success) {
+      setStateFormAddEdit({
+        success: false,
+        errors: valResult.error.flatten().fieldErrors,
+      });
+      return;
+    };
+    setStateFormAddEdit({ success: true, errors: {} });
 
-    // setOpenModal(false);
-    // setTimeout(async () => {
-    //   const confirmed = await openAlert({
-    //     title: 'Submit Confirmation!',
-    //     description: 'Are you sure you want to submit this form? Please double-check before proceeding!',
-    //     textConfirm: 'Yes, Submit',
-    //     textClose: 'No, Go Back',
-    //     icon: 'bx bx-error bx-tada text-blue-500'
-    //   });
-    //   if (!confirmed) {
-    //     setOpenModal(true);
-    //     return;
-    //   }
+    setOpenModal(false);
+    setTimeout(async () => {
+      const confirmed = await openAlert({
+        title: 'Submit Confirmation!',
+        description: 'Are you sure you want to submit this form? Please double-check before proceeding!',
+        textConfirm: 'Yes, Submit',
+        textClose: 'No, Go Back',
+        icon: 'bx bx-error bx-tada text-blue-500'
+      });
+      if (!confirmed) {
+        setOpenModal(true);
+        return;
+      }
 
-    //   const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
-    //   try {
-    //     await StoreDataRoles(createDtoData());
-    //     await fatchDatas();
-    //     toast.success("Submit successfully!", {
-    //       description: "Your submission has been successfully completed!",
-    //     });
+      const sonnerSubmit = SonnerPromise("Submiting proccess...", "Please wait, trying to submit you request!");
+      try {
+        await StoreDataUser(createDtoData());
+        await fatchDatas();
+        toast.success("Submit successfully!", {
+          description: "Your submission has been successfully completed!",
+        });
 
-    //     setOpenModal(false);
-    //     setDataStoreAddEdit([]);
-    //   } catch (error: any) {
-    //     toast.warning("Request Failed!", {
-    //       description: error.message,
-    //     });
-    //   }
-    //   toast.dismiss(sonnerSubmit);
-    // }, 100);
+        setOpenModal(false);
+      } catch (error: any) {
+        toast.warning("Request Failed!", {
+          description: error.message,
+        });
+      }
+      toast.dismiss(sonnerSubmit);
+    }, 100);
   };
 
-  const [selectedFrameworks, setSelectedFrameworks] = useState<string[]>();
   return (
     <>
       <BreadcrumbListing listBc={listBreadcrumb} />
 
       <TableTopToolbar
         tblName="User List"
+        tblDesc="Easily manage your team. View all users, adjust their access, and keep your system organized and secure."
         inputSearch={inputSearch}
         tblSortList={tblSortList}
         thColomn={tblThColomns}
@@ -327,16 +382,16 @@ export default function UserList() {
                 <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="email">Email<span className="text-red-500">*</span></Label>
                   <div>
-                    <Input type="text" id="email" name="email" placeholder="Enter email address" />
-                    {/* {stateFormAddEdit.errors?.slug && <ZodErrors err={stateFormAddEdit.errors?.slug} />} */}
+                    <Input value={txtEmail} onChange={(e) => setTxtEmail(e.target.value)} type="text" id="email" name="email" placeholder="Enter email address" />
+                    {stateFormAddEdit.errors?.email && <ZodErrors err={stateFormAddEdit.errors?.email} />}
                   </div>
                 </div>
-                <div className="grid gap-2">
+                {/* <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="password">Password<span className="text-red-500">*</span></Label>
                   <div>
-                    <Input type="text" id="password" name="password" placeholder="Enter password account" />
+                    <Input value={txtPassword} onChange={(e) => setTxtPassword(e.target.value)} type="text" id="password" name="password" placeholder="Enter password account" />
                   </div>
-                </div>
+                </div> */}
                 <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="is_active">Status<span className="text-red-500">*</span></Label>
                   <div>
@@ -351,6 +406,7 @@ export default function UserList() {
                         </SelectGroup>
                       </SelectContent>
                     </Select>
+                    {stateFormAddEdit.errors?.is_active && <ZodErrors err={stateFormAddEdit.errors?.is_active} />}
                   </div>
                 </div>
                 <div className="grid gap-2">
@@ -401,24 +457,26 @@ export default function UserList() {
                         </Command>
                       </PopoverContent>
                     </Popover>
+                    {stateFormAddEdit.errors?.role && <ZodErrors err={stateFormAddEdit.errors?.role} />}
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="fullname">Fullname<span className="text-red-500">*</span></Label>
                   <div>
-                    <Input type="text" id="fullname" name="fullname" placeholder="Enter fullname account" />
+                    <Input value={txtFullname} onChange={(e) => setTxtFullname(e.target.value)} type="text" id="fullname" name="fullname" placeholder="Enter fullname account" />
+                    {stateFormAddEdit.errors?.fullname && <ZodErrors err={stateFormAddEdit.errors?.fullname} />}
                   </div>
                 </div>
-                <div className="grid gap-2">
+                {/* <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="profile_picture">Picture</Label>
                   <div>
                     <Input type="file" id="profile_picture" name="profile_picture" placeholder="Enter profile picture" />
                   </div>
-                </div>
+                </div> */}
                 <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="gender">Gender</Label>
                   <div>
-                    <Select name="gender">
+                    <Select value={txtGender} onValueChange={(val) => setTxtGender(val)} name="gender">
                       <SelectTrigger id="gender" className="w-full">
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
@@ -435,18 +493,18 @@ export default function UserList() {
                 <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="no_phone">Phone Number</Label>
                   <div>
-                    <Input type="text" id="no_phone" name="no_phone" placeholder="Enter phone number" />
+                    <Input value={txtNoPhone} onChange={(e) => setTxtNoPhone(e.target.value)} type="text" id="no_phone" name="no_phone" placeholder="Enter phone number" />
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="birth_place">Birth Place</Label>
                   <div>
-                    <Input type="text" id="birth_place" name="birth_place" placeholder="Enter birth place" />
+                    <Input value={txtBirthPlace} onChange={(e) => setTxtBirthPlace(e.target.value)} type="text" id="birth_place" name="birth_place" placeholder="Enter birth place" />
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label className="gap-0">Birth Date</Label>
-                  <DatePicker placeholder="Pick birth date" />
+                  <DatePicker dateVal={txtBirthDate} setDateVal={setTxtBirthDate} placeholder="Pick birth date" />
                 </div>
               </div>
 
@@ -454,9 +512,9 @@ export default function UserList() {
                 <Label className="gap-0">Access Store</Label>
                 <div>
                   <MultiSelect
-                    options={frameworksList}
-                    onValueChange={setSelectedFrameworks}
-                    defaultValue={selectedFrameworks}
+                    options={storeAccessList || []}
+                    onValueChange={setSelectedStoreAccess}
+                    defaultValue={selectedStoreAccess}
                     placeholder="Select access store"
                     variant="secondary"
                   />
@@ -477,10 +535,3 @@ export default function UserList() {
     </>
   )
 }
-const frameworksList = [
-  { value: "react", label: "React" },
-  { value: "angular", label: "Angular" },
-  { value: "vue", label: "Vue" },
-  { value: "svelte", label: "Svelte" },
-  { value: "ember", label: "Ember" },
-];

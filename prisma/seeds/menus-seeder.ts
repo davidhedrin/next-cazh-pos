@@ -27,10 +27,11 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
   
         { slug: "usm-usl", name: "User Management", createdBy: "SEEDER" }, // ID: 16
         { slug: "usm-rnp", name: "Roles & Permissions", createdBy: "SEEDER" }, // ID: 17
+        { slug: "usm-bka", name: "Bank Account", createdBy: "SEEDER" }, // ID: 18
         
-        { slug: "set-sri", name: "Store Information", createdBy: "SEEDER" }, // ID: 18
-        { slug: "set-acl", name: "Activity Logs", createdBy: "SEEDER" }, // ID: 19
-        { slug: "set-prf", name: "My Profile", createdBy: "SEEDER" }, // ID: 20
+        { slug: "set-sri", name: "Store Information", createdBy: "SEEDER" }, // ID: 19
+        { slug: "set-acl", name: "Activity Logs", createdBy: "SEEDER" }, // ID: 20
+        { slug: "set-prf", name: "My Profile", createdBy: "SEEDER" }, // ID: 21
       ]
     });
   });

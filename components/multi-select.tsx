@@ -60,9 +60,10 @@ export type MutipleSelectType = {
 /**
  * Props for MultiSelect component
  */
-interface MultiSelectProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-  VariantProps<typeof multiSelectVariants> {
+interface MultiSelectProps extends VariantProps<typeof multiSelectVariants> {
+  isPopoverOpened?: boolean;
+  setIsPopoverOpened?: React.Dispatch<React.SetStateAction<boolean>>;
+
   /**
    * An array of option objects to be displayed in the multi-select component.
    * Each option object has a label, value, and an optional icon.
@@ -73,10 +74,10 @@ interface MultiSelectProps
    * Callback function triggered when the selected values change.
    * Receives an array of the new selected values.
    */
-  onValueChange: (value: string[]) => void;
+  onValueChange: (value: MutipleSelectType[]) => void;
 
   /** The default selected values when the component mounts. */
-  defaultValue?: string[];
+  defaultValue?: MutipleSelectType[];
 
   /**
    * Placeholder text to be displayed when no values are selected.
@@ -116,6 +117,9 @@ export const MultiSelect = React.forwardRef<
 >(
   (
     {
+      isPopoverOpened,
+      setIsPopoverOpened,
+      
       options,
       onValueChange,
       variant,
@@ -129,15 +133,17 @@ export const MultiSelect = React.forwardRef<
     },
     ref
   ) => {
-    const [selectedValues, setSelectedValues] =
-      React.useState<string[]>(defaultValue);
+    const [selectedValues, setSelectedValues] = React.useState<MutipleSelectType[]>(defaultValue);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
+    
+    const isOpenSelect = typeof isPopoverOpened === "boolean" ? isPopoverOpened : isPopoverOpen;
+    const setIsOpenSelect = setIsPopoverOpened ?? setIsPopoverOpen;
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>
     ) => {
       if (event.key === "Enter") {
-        setIsPopoverOpen(true);
+        setIsOpenSelect(true);
       } else if (event.key === "Backspace" && !event.currentTarget.value) {
         const newSelectedValues = [...selectedValues];
         newSelectedValues.pop();
@@ -146,7 +152,7 @@ export const MultiSelect = React.forwardRef<
       }
     };
 
-    const toggleOption = (option: string) => {
+    const toggleOption = (option: MutipleSelectType) => {
       const newSelectedValues = selectedValues.includes(option)
         ? selectedValues.filter((value) => value !== option)
         : [...selectedValues, option];
@@ -160,7 +166,7 @@ export const MultiSelect = React.forwardRef<
     };
 
     const handleTogglePopover = () => {
-      setIsPopoverOpen((prev) => !prev);
+      setIsOpenSelect((prev) => !prev);
     };
 
     const clearExtraOptions = () => {
@@ -173,7 +179,7 @@ export const MultiSelect = React.forwardRef<
       if (selectedValues.length === options.length) {
         handleClear();
       } else {
-        const allValues = options.map((option) => option.value);
+        const allValues = options.map((option) => option);
         setSelectedValues(allValues);
         onValueChange(allValues);
       }
@@ -181,8 +187,8 @@ export const MultiSelect = React.forwardRef<
 
     return (
       <Popover
-        open={isPopoverOpen}
-        onOpenChange={setIsPopoverOpen}
+        open={isOpenSelect}
+        onOpenChange={setIsOpenSelect}
       >
         <PopoverTrigger asChild>
           <Button
@@ -199,11 +205,11 @@ export const MultiSelect = React.forwardRef<
                 <div className="flex flex-wrap items-center">
                   {(maxCount > 0 ? selectedValues.slice(0, maxCount) : selectedValues).map(
                     (value) => {
-                      const option = options.find((o) => o.value === value);
+                      const option = options.find((o) => o.value === value.value);
                       const IconComponent = option?.icon;
                       return (
                         <Badge
-                          key={value}
+                          key={value.value}
                           className={cn("", multiSelectVariants({ variant }))}
                         >
                           {IconComponent && (
@@ -268,7 +274,7 @@ export const MultiSelect = React.forwardRef<
         <PopoverContent
           className="w-auto p-0"
           align="start"
-          onEscapeKeyDown={() => setIsPopoverOpen(false)}
+          onEscapeKeyDown={() => setIsOpenSelect(false)}
         >
           <Command>
             <CommandInput
@@ -296,11 +302,11 @@ export const MultiSelect = React.forwardRef<
                   <span>(Select All)</span>
                 </CommandItem>
                 {options.map((option) => {
-                  const isSelected = selectedValues.includes(option.value);
+                  const isSelected = selectedValues.includes(option);
                   return (
                     <CommandItem
                       key={option.value}
-                      onSelect={() => toggleOption(option.value)}
+                      onSelect={() => toggleOption(option)}
                       className="cursor-pointer"
                     >
                       <div

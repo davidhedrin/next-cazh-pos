@@ -108,7 +108,7 @@ model RoleMenus {
 
 model User {
   id             Int                  @id @default(autoincrement())
-  business_id    Int
+  business_id    Int?
   email          String               @unique
   password       String
   email_verified DateTime?

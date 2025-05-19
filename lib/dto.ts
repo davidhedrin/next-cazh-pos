@@ -1,3 +1,5 @@
+import { MutipleSelectType } from "@/components/multi-select";
+
 export type DtoRoles = {
   id: number | null;
   slug_name: string;
@@ -27,4 +29,21 @@ export type DtoStoreInfo = {
   no_tlp?: string | null;
   email?: string | null;
   is_active?: boolean;
+}
+
+export type DtoUserAccount = {
+  id: number | null;
+  email: string;
+  role_id: number | null;
+  is_active_user?: boolean;
+
+  id_account: number | null;
+  fullname?: string | null;
+  image?: string | null;
+  no_phone?: string | null;
+  gender?: string | null;
+  birth_date?: Date | null;
+  birth_place?: string | null;
+
+  store_access: MutipleSelectType[];
 }

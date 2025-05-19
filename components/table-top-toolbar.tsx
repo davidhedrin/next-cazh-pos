@@ -20,6 +20,7 @@ import { DateRange } from "react-day-picker";
 
 type TableTopToolbarProps = {
   tblName?: string;
+  tblDesc?: string;
   thColomn?: TableThModel[];
   tblSortList?: TableShortList[];
   inputSearch?: string;
@@ -35,6 +36,7 @@ type TableTopToolbarProps = {
 
 export default function TableTopToolbar({
   tblName,
+  tblDesc,
   thColomn,
   tblSortList,
   inputSearch,
@@ -69,9 +71,10 @@ export default function TableTopToolbar({
   return (
     <div>
       {
-        tblName != null ? (
+        tblName != null || tblDesc != null ? (
           <>
             <div className="font-medium">{tblName}</div>
+            <p className="text-sm text-muted-foreground">{tblDesc}</p>
             <hr className="mb-2.5 mt-0.5" />
           </>
         ) : <></>

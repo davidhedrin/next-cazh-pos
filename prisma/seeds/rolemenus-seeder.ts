@@ -24,9 +24,10 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
         { business_id: 1, role_id: 1, menu_id: 15, menu_slug: "rna-ptr", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
         { business_id: 1, role_id: 1, menu_id: 16, menu_slug: "usm-usl", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
         { business_id: 1, role_id: 1, menu_id: 17, menu_slug: "usm-rnp", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
-        { business_id: 1, role_id: 1, menu_id: 18, menu_slug: "set-sri", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
-        { business_id: 1, role_id: 1, menu_id: 19, menu_slug: "set-acl", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
-        { business_id: 1, role_id: 1, menu_id: 20, menu_slug: "set-prf", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
+        { business_id: 1, role_id: 1, menu_id: 18, menu_slug: "usm-bka", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
+        { business_id: 1, role_id: 1, menu_id: 19, menu_slug: "set-sri", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
+        { business_id: 1, role_id: 1, menu_id: 20, menu_slug: "set-acl", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
+        { business_id: 1, role_id: 1, menu_id: 21, menu_slug: "set-prf", create: true, read: true, update: true, delete: true, createdBy: "SEEDER" },
       ]
     });
   });

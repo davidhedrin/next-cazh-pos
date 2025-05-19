@@ -156,7 +156,7 @@ export default function StoreInformation() {
       is_active: isActive === "true" ? true : false,
     };
     return newData;
-  }
+  };
   const openModalAddEdit = async (id?: number) => {
     if (id) {
       const openSonner = SonnerPromise("Loading open form...");
@@ -256,6 +256,7 @@ export default function StoreInformation() {
 
       <TableTopToolbar
         tblName="Store Info List"
+        tblDesc="Manage all the stores your own linked to your account. The number can register is limited by your Subscription Plan!"
         inputSearch={inputSearch}
         tblSortList={tblSortList}
         thColomn={tblThColomns}

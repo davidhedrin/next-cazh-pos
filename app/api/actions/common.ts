@@ -39,7 +39,6 @@ export async function GetDataMenus(params: GetDataMenusParams): Promise<Paginate
   };
 };
 
-
 export async function getUserAuth() {
   return await auth();
 }

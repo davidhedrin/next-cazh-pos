@@ -381,6 +381,7 @@ export default function RolesPermission() {
 
       <TableTopToolbar
         tblName="Role List"
+        tblDesc="A list of user roles with associated permissions for controlling page-level access."
         inputSearch={inputSearch}
         tblSortList={tblSortList}
         thColomn={tblThColomns}

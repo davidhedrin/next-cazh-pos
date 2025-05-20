@@ -2,11 +2,12 @@
 
 import { db } from "@/prisma/db";
 import { auth } from "@/lib/auth-setup";
-import { PaginateResult, CommonParams } from "@/lib/models-type";
+import { PaginateResult, CommonParams, UploadFileRespons } from "@/lib/models-type";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import { Prisma, Roles, RoleMenus, Menus, User, Account } from "@prisma/client";
 import { DtoRoles, DtoUserAccount } from "@/lib/dto";
 import { genSecurePassword, hashPassword } from "@/lib/utils";
+import { UploadFile } from "./common";
 
 // Access Roles
 type GetDataRolesParams = {
@@ -233,6 +234,9 @@ export async function StoreDataUser(formData:DtoUserAccount) {
     if(!session) throw new Error("Authentication credential not Found!");
     const { user } = session;
     
+    let upFile: UploadFileRespons | null;
+    if(formData.image_file) upFile = await UploadFile(formData.image_file, "public/upload/profile");
+
     const data_id = formData.id ?? 0;
     await db.$transaction(async (tx) => {
       const createRandomPass = genSecurePassword(10);
@@ -260,7 +264,8 @@ export async function StoreDataUser(formData:DtoUserAccount) {
         where: { id: data_id_acc},
         update: {
           fullname: formData.fullname,
-          image: null,
+          image: upFile != null && upFile.status == true ? upFile.filename : null,
+          image_path: upFile != null && upFile.status == true ? upFile.path : null,
           no_phone: formData.no_phone,
           gender: formData.gender,
           birth_date: formData.birth_date?.toString(),
@@ -271,14 +276,19 @@ export async function StoreDataUser(formData:DtoUserAccount) {
           business_id: user?.business_id,
           userId: txUser.id,
           fullname: formData.fullname,
-          image: null,
+          image: upFile != null && upFile.status == true ? upFile.filename : null,
+          image_path: upFile != null && upFile.status == true ? upFile.path : null,
           no_phone: formData.no_phone,
           gender: formData.gender,
           birth_date: formData.birth_date?.toString(),
           birth_place: formData.birth_place,
           is_active: formData.is_active_user
         }
-      })
+      });
+
+      if(data_id > 0) {
+        
+      }
     });
   } catch (error: any) {
     throw new Error(error.message);

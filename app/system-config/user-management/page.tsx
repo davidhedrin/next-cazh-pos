@@ -155,6 +155,7 @@ export default function UserList() {
       gender: txtGender.trim() != "" ? txtGender : null,
       birth_date: txtBirthDate,
       birth_place: txtBirthPlace.trim() != "" ? txtBirthPlace : null,
+      image_file: profilePicture,
 
       store_access: selectedStoreAccess || [],
     };
@@ -221,6 +222,7 @@ export default function UserList() {
       setTxtBirthPlace("");
       setTxtBirthDate(undefined);
       setIsActive(undefined);
+      setProfilePicture(undefined);
     }
     toast.dismiss(openSonner);
     setOpenModal(true);
@@ -237,8 +239,10 @@ export default function UserList() {
   const [txtBirthPlace, setTxtBirthPlace] = useState("");
   const [txtBirthDate, setTxtBirthDate] = useState<Date>();
   const [isActive, setIsActive] = useState<string>();
-  // const [txtPassword, setTxtPassword] = useState("");
-  // const [txtPicture, setTxtPicture] = useState("");
+  const [profilePicture, setProfilePicture] = useState<File>();
+  const handleFileProfile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) setProfilePicture(e.target.files[0]);
+  };
   const FormSchemaAddEdit = z.object({
     email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
     is_active: z.string().min(1, { message: 'Status is required field.' }).trim(),
@@ -467,12 +471,12 @@ export default function UserList() {
                     {stateFormAddEdit.errors?.fullname && <ZodErrors err={stateFormAddEdit.errors?.fullname} />}
                   </div>
                 </div>
-                {/* <div className="grid gap-2">
+                <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="profile_picture">Picture</Label>
                   <div>
-                    <Input type="file" id="profile_picture" name="profile_picture" placeholder="Enter profile picture" />
+                    <Input onChange={handleFileProfile} type="file" id="profile_picture" name="profile_picture" />
                   </div>
-                </div> */}
+                </div>
                 <div className="grid gap-2">
                   <Label className="gap-0" htmlFor="gender">Gender</Label>
                   <div>

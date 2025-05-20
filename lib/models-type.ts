@@ -56,3 +56,10 @@ export type AppSidebarMenu = {
   isActive?: boolean;
   items?: AppSidebarMenu[];
 };
+
+export type UploadFileRespons = {
+  status: boolean;
+  message?: string | null;
+  filename?: string | null;
+  path?: string | null;
+}

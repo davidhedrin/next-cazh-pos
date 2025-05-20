@@ -40,6 +40,7 @@ export type DtoUserAccount = {
   id_account: number | null;
   fullname?: string | null;
   image?: string | null;
+  image_file?: File | null;
   no_phone?: string | null;
   gender?: string | null;
   birth_date?: Date | null;

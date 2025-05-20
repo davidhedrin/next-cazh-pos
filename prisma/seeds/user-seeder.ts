@@ -42,7 +42,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           fullname: "David Simbolon",
           no_phone: "082110863133",
           gender: "Male",
-          birth_date: "11 Desember 1999",
+          birth_date: new Date('1999-12-11'),
           birth_place: "Medan, Ranto Parapat",
         },
         {
@@ -51,7 +51,7 @@ export default async (prisma: PrismaClient<Prisma.PrismaClientOptions, never, De
           fullname: "Jesika Marbun",
           no_phone: "082110860667",
           gender: "Female",
-          birth_date: "03 April 2000",
+          birth_date: new Date('2000-04-03'),
           birth_place: "Tangerang, Taman Adiyasa",
         },
       ]
